@@ -106,6 +106,6 @@ docker compose down -v          # stop services and reset database volume
 
 1. Clone the public assignment repository from `https://github.com/dohoro-git/se-assignment` and complete your work in your local copy. Do not push your solution to the public upstream repository.
 2. Create a ZIP containing your source code, tests, Dockerfiles, `docker-compose.yml`, and `SOLUTION.md`. Exclude `.git/`, `node_modules/`, `.env` files, and secrets.
-3. Email the ZIP to **careers@dohoro.com** with subject: `Assignment — [Your Name] — [Role]`.
+3. Email the ZIP to **support@dohoro.com** with subject: `Assignment — [Your Name] — [Role]`.
 
 We will review within 24 hours.

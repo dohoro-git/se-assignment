@@ -193,7 +193,7 @@ Marks within each area reflect correctness, completeness, and clarity. Partial c
 
 ## Submission
 
-Submit the completed solution as a ZIP attachment to **careers@dohoro.com** with subject line:
+Submit the completed solution as a ZIP attachment to **support@dohoro.com** with subject line:
 
 `Assignment — [Your Name] — [Role Applied For]`
 
