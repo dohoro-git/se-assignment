@@ -3,6 +3,8 @@ export interface Credentials {
   password: string
 }
 
+export type AccountRole = 'ADMIN' | 'VIEWER'
+
 export interface Workspace {
   id: string
   name: string
@@ -11,6 +13,7 @@ export interface Workspace {
 export interface User {
   id: string
   email: string
+  role: AccountRole
   workspace: Workspace
 }
 

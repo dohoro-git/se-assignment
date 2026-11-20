@@ -60,7 +60,7 @@ qa/frontend/src/
         └── routes/
 ```
 
-The application has no third-party UI kit. Forms use native browser controls and accessible labels. Requests go through `shared/api/client.ts`; the API remains authoritative for validation, authentication, and workspace membership. Every verified user lands in the same shared dashboard. For collaboration checks, sign into two separate browser profiles and use **Refresh shared tasks** to see the other member's changes. In SMTP mode the signup page links to Mailpit at `http://127.0.0.1:8025`; the six-digit OTP is in the received message. The local-only fallback displays the code directly.
+The application has no third-party UI kit. Forms use native browser controls and accessible labels. Requests go through `shared/api/client.ts`; the API remains authoritative for validation, authentication, roles, and workspace membership. Keep multiple accounts signed in in one browser: use **Add account**, then switch roles with **Active browser session**. The account list is shared across tabs, while each tab can select its own active user. The first account is ADMIN; later accounts are VIEWER. In SMTP mode the signup page links to Mailpit at `http://127.0.0.1:8025`; the six-digit OTP is in the received message. The local-only fallback displays the code directly.
 
 ## Troubleshooting
 

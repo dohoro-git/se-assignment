@@ -36,7 +36,7 @@ npm run db:setup
 npm run dev
 ```
 
-The API binds to loopback at `http://127.0.0.1:3001`. The unauthenticated health endpoint is `GET http://127.0.0.1:3001/api/health`. `npm run dev` watches TypeScript source changes. On the first verified signup, the API creates the shared `Dohoro QA Team` workspace; subsequent verified signups join it automatically.
+The API binds to loopback at `http://127.0.0.1:3001`. The unauthenticated health endpoint is `GET http://127.0.0.1:3001/api/health`. `npm run dev` watches TypeScript source changes. On the first verified signup, the API creates the shared `Dohoro QA Team` workspace and assigns `ADMIN`; subsequent verified signups join it as `VIEWER`. Role assignment is server-side and is not accepted from signup input.
 
 Build and run the compiled API if desired:
 

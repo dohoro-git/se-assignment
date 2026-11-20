@@ -1,10 +1,16 @@
-import { Prisma } from '@prisma/client'
+import { Prisma, UserRole } from '@prisma/client'
 import { prisma } from '../db/client'
 import { SHARED_WORKSPACE } from '../types/workspace'
 
 export const authModel = {
   findUser(email: string) {
     return prisma.user.findUnique({ where: { email }, include: { workspace: true } })
+  },
+  findUserById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true, role: true, workspace: { select: { id: true, name: true } } },
+    })
   },
   saveChallenge(data: Prisma.SignupChallengeCreateInput) {
     return prisma.signupChallenge.upsert({ where: { email: data.email }, create: data, update: data })
@@ -32,9 +38,11 @@ export const authModel = {
         create: SHARED_WORKSPACE,
         update: {},
       })
+      const existingMembers = await tx.user.count({ where: { workspaceId: workspace.id } })
+      const role = existingMembers === 0 ? UserRole.ADMIN : UserRole.VIEWER
       return tx.user.create({
-        data: { email, passwordHash, workspaceId: workspace.id },
-        select: { id: true, email: true, workspace: { select: { id: true, name: true } } },
+        data: { email, passwordHash, workspaceId: workspace.id, role },
+        select: { id: true, email: true, role: true, workspace: { select: { id: true, name: true } } },
       })
     })
   },
@@ -46,7 +54,7 @@ export const authModel = {
       where: { tokenHash, expiresAt: { gt: new Date() } },
       include: {
         user: {
-          select: { id: true, email: true, workspaceId: true, workspace: { select: { id: true, name: true } } },
+          select: { id: true, email: true, role: true, workspaceId: true, workspace: { select: { id: true, name: true } } },
         },
       },
     })

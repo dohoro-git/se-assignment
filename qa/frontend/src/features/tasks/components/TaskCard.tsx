@@ -1,9 +1,10 @@
 import { statusLabel } from '../interfaces/task'
 import type { Task } from '../interfaces/task'
 
-export function TaskCard({ task, busy, confirming, edit, confirmDelete, remove, cancel }: {
+export function TaskCard({ task, busy, canManage, confirming, edit, confirmDelete, remove, cancel }: {
   task: Task
   busy: boolean
+  canManage: boolean
   confirming: boolean
   edit: () => void
   confirmDelete: () => void
@@ -18,7 +19,7 @@ export function TaskCard({ task, busy, confirming, edit, confirmDelete, remove, 
       </div>
       {task.description && <p>{task.description}</p>}
       <p className="task-meta">Added by {task.createdBy.email}</p>
-      {confirming ? (
+      {canManage && (confirming ? (
         <div className="confirm">
           <p>Delete this task? This cannot be undone.</p>
           <div className="actions">
@@ -31,7 +32,7 @@ export function TaskCard({ task, busy, confirming, edit, confirmDelete, remove, 
           <button disabled={busy} type="button" onClick={edit}>Edit</button>
           <button disabled={busy} type="button" onClick={confirmDelete}>Delete</button>
         </div>
-      )}
+      ))}
     </article>
   )
 }

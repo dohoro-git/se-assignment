@@ -30,7 +30,8 @@ To create a test account:
 1. Choose **Create an account** and enter a unique disposable email and synthetic password (8+ characters).
 2. In the default SMTP mode, open Mailpit from the signup page and read the OTP email. It is captured locally and never sent to an external mail provider. In `OTP_DELIVERY=local` fallback mode, the six-digit code appears directly in the browser.
 3. Enter the displayed OTP to verify, then sign in with the same email/password.
-4. Create a second account with a different disposable email, sign in from a separate browser profile/window, and compare both users' shared task dashboards. Exercise task creation, status changes, editing, filtering, deletion confirmation, refresh, and sign-out from both sessions.
+4. On a fresh/reset database, the first account is `ADMIN`. From that dashboard choose **Add account** and create a second account with a different disposable email in the same browser; the second account is `VIEWER`. If local records already exist, use the existing ADMIN or reset the disposable database first.
+5. Use the **Active browser session** selector to switch between accounts without signing either out. You can choose different active sessions in separate tabs of the same browser. Confirm the `ADMIN` can create/update/delete, the `VIEWER` can read but cannot write, both see the same tasks, and signing out one session leaves the other session active.
 
 The API docs at [`api.md`](api.md) describe the contract and status codes. Setup guides: [`frontend-setup.md`](frontend-setup.md) and [`backend-setup.md`](backend-setup.md).
 
@@ -39,8 +40,8 @@ The API docs at [`api.md`](api.md) describe the contract and status codes. Setup
 Use these requirements as a black-box contract, including error paths:
 
 - Account signup should validate email/password, generate an unpredictable one-time code, send it through the configured local Mailpit SMTP receiver, reject invalid/expired/reused challenges, and allow the user to sign in after successful verification. In SMTP mode the code should arrive in Mailpit rather than be exposed in the API response.
-- Sign-in should create a usable session; sign-out should revoke it. Protected screens and APIs should reject missing/invalid sessions.
-- Every OTP-verified account is a member of the same `Dohoro QA Team` workspace. Members should see the same task list, including tasks created by other members, and can create/read/update/filter/delete workspace tasks. The server derives workspace membership from the authenticated session; clients cannot select or impersonate another workspace/member.
+- Sign-in should create a usable session; sign-out should revoke only that account's session. Multiple accounts should remain signed in in one browser, be switchable per tab using the account selector, and retain their independent roles. Protected APIs should reject missing/invalid sessions.
+- Every OTP-verified account is a member of the same `Dohoro QA Team` workspace. The first account is assigned `ADMIN`; later accounts are `VIEWER`. Both roles can see the same task list, including tasks created by other members. `ADMIN` can create/read/update/filter/delete tasks; `VIEWER` is read-only, and the API must reject viewer writes with `403`. The server derives role and workspace membership from the session; clients cannot select or impersonate either.
 - A task should identify its creator. Changes made by one signed-in member should be visible to another member after that member refreshes the dashboard. Live push updates are not promised.
 - Task forms should validate title and field lengths, show useful feedback, and expose loading/success/error/empty states.
 - Destructive deletion should require explicit confirmation. On confirmed deletion, the selected task should be removed and the UI should reflect the server result.
@@ -50,7 +51,7 @@ Treat the contract as expected behavior, not proof the current app is correct. I
 
 ## Suggested investigation (not a test checklist)
 
-Choose coverage using risk and impact. Consider exploring multiple signup/auth states, email delivery and SMTP-unavailable behavior, input boundaries, repeated/parallel interactions, task lifecycle combinations, two independent member sessions sharing and changing the same tasks, authorization failures, error recovery, browser refresh, keyboard-only operation, and screen resizing. You do not need to automate every possible case; explain why your selected cases matter.
+Choose coverage using risk and impact. Consider exploring multiple signup/auth states, email delivery and SMTP-unavailable behavior, input boundaries, repeated/parallel interactions, task lifecycle combinations, two simultaneously saved sessions in one browser, cross-role shared-task visibility and writes, per-session sign-out, authorization failures, error recovery, browser refresh, keyboard-only operation, and screen resizing. You do not need to automate every possible case; explain why your selected cases matter.
 
 Mailpit is a local test inbox, not a production email provider; messages are not delivered externally. Use unique disposable addresses. Avoid destructive actions against unrelated data; use the reset/setup instructions for your disposable local database.
 

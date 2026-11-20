@@ -38,6 +38,12 @@ output { font-family: monospace; font-size: 1.1rem; font-weight: bold; }
 .hint { font-size: .9rem; }
 .actions, .row { display: flex; gap: .55rem; align-items: center; flex-wrap: wrap; }
 .row { justify-content: space-between; }
+.account-tools { display: flex; gap: .55rem; align-items: end; justify-content: flex-end; flex-wrap: wrap; }
+.account-tools label { min-width: min(100%, 15rem); }
+.role-badge { display: inline-block; border-radius: 1rem; padding: .25rem .7rem; font-size: .8rem; font-weight: 750; letter-spacing: .04em; }
+.role-admin { background: #f8e5b9; color: #684500; }
+.role-viewer { background: #e4eaf3; color: #344764; }
+.role-note { font-weight: 650; }
 .auth-actions { margin-top: 1rem; }
 .heading, .controls { margin-bottom: 1rem; }
 .controls { align-items: end; }

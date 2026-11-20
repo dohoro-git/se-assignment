@@ -43,7 +43,7 @@ Web app: `http://127.0.0.1:5173`. The frontend proxies `/api` requests to the lo
 
 To run without Docker, set `OTP_DELIVERY=local` in `qa/backend/.env`; the code is then shown in the web app and returned by the signup API. This fallback does not send email.
 
-Create a second disposable account and sign in using a separate browser profile to check shared dashboard access. Each verified account joins the same local team.
+In a fresh/reset database the first verified account is ADMIN; subsequent accounts are VIEWER. From the dashboard choose **Add account** to sign in a second user in the same browser, then use the session selector while keeping both sessions active. Open another tab to select a different active role; both tabs keep their selections. If local accounts already exist, use the existing ADMIN or reset the disposable database first.
 
 ## Candidate task
 

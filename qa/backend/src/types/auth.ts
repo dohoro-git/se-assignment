@@ -1,6 +1,9 @@
+export type AccountRole = 'ADMIN' | 'VIEWER'
+
 export interface SessionContext {
   userId: string
   workspaceId: string
+  role: AccountRole
   tokenHash: string
 }
 

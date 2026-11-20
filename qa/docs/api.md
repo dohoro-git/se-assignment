@@ -22,6 +22,7 @@ Errors use JSON with a stable `code` and human-readable `error`; validation erro
 |---|---|---|
 | `400` | `INVALID_JSON`, `VALIDATION_ERROR`, `OTP_INVALID` | Malformed JSON, invalid request data, or invalid/expired OTP |
 | `401` | `UNAUTHORIZED`, `INVALID_CREDENTIALS` | Missing/expired session or wrong sign-in credentials |
+| `403` | `FORBIDDEN` | Authenticated role is not allowed to perform the requested write |
 | `404` | `TASK_NOT_FOUND`, `ROUTE_NOT_FOUND` | No matching task in the authenticated user's shared workspace or endpoint |
 | `409` | `ACCOUNT_EXISTS`, `TASK_DELETE_CONFLICT` | Duplicate account or task deletion conflict |
 | `413` | `PAYLOAD_TOO_LARGE` | JSON request body exceeds 10 KB |
@@ -102,18 +103,19 @@ Consumes a valid signup challenge and creates the account. The challenge can be 
   "user": {
     "id": "f44945f9-a5f7-47c2-9204-539e5751714e",
     "email": "qa-example@example.test",
+    "role": "ADMIN",
     "workspace": { "id": "dohoro-qa-team", "name": "Dohoro QA Team" }
   }
 }
 ```
 
-Every verified signup joins the shared team workspace automatically; no invite or workspace ID is supplied by the user.
+Every verified signup joins the shared team workspace automatically; no invite or workspace ID is supplied by the user. The first account in a fresh workspace is assigned `ADMIN`; subsequent accounts are assigned `VIEWER`. The role is assigned by the server and cannot be selected in signup data.
 
 Invalid, expired, consumed, or exhausted challenges return a `400` (`429` once no attempts remain). To restart, request a new code.
 
 ### `POST /auth/signin`
 
-Starts an eight-hour server-side session. Email matching uses normalized lowercase addresses.
+Starts an eight-hour server-side session. Multiple sessions may be active for different accounts in the same browser. Email matching uses normalized lowercase addresses; the response contains the server-assigned role.
 
 **Request**
 
@@ -128,6 +130,7 @@ Starts an eight-hour server-side session. Email matching uses normalized lowerca
   "user": {
     "id": "f44945f9-a5f7-47c2-9204-539e5751714e",
     "email": "qa-example@example.test",
+    "role": "ADMIN",
     "workspace": { "id": "dohoro-qa-team", "name": "Dohoro QA Team" }
   },
   "token": "<random 43-character bearer token>",
@@ -137,15 +140,39 @@ Starts an eight-hour server-side session. Email matching uses normalized lowerca
 
 Wrong email/password returns `401 INVALID_CREDENTIALS` with a generic error message.
 
+### `GET /auth/me`
+
+Requires `Authorization: Bearer <token>`. Returns the account, current server-assigned role, and workspace for this session. The browser calls this when switching between saved sessions so role changes are refreshed from the server.
+
+**200 response**
+
+```json
+{
+  "user": {
+    "id": "f44945f9-a5f7-47c2-9204-539e5751714e",
+    "email": "qa-example@example.test",
+    "role": "ADMIN",
+    "workspace": { "id": "dohoro-qa-team", "name": "Dohoro QA Team" }
+  }
+}
+```
+
 ### `POST /auth/signout`
 
-Requires `Authorization: Bearer <token>`. Revokes the current server session.
+Requires `Authorization: Bearer <token>`. Revokes only the current server session; other saved account sessions remain active.
 
-**204 response** — empty body. Reusing the token on a protected endpoint returns `401`.
+**204 response** — empty body. Reusing the revoked token on a protected endpoint returns `401`.
 
 ## Tasks
 
-All task endpoints require a valid bearer session. Every OTP-verified user automatically belongs to the single shared `Dohoro QA Team` workspace. Task reads and writes are scoped to the workspace ID from the authenticated session; any member can work with the same task list. The client must not provide a workspace ID for access control. Task statuses are `TODO`, `IN_PROGRESS`, and `DONE`.
+All task endpoints require a valid bearer session. Every OTP-verified user automatically belongs to the single shared `Dohoro QA Team` workspace. Task reads and writes are scoped to the workspace ID from the authenticated session; the client cannot provide a workspace ID for access control. Task statuses are `TODO`, `IN_PROGRESS`, and `DONE`.
+
+| Role | Read tasks | Create/update/delete tasks |
+|---|---:|---:|
+| `ADMIN` (first verified account) | Yes | Yes |
+| `VIEWER` (later verified accounts) | Yes | No — API returns `403 FORBIDDEN` |
+
+The role is stored on the account and checked by the API on every write; hiding UI controls is not the security boundary.
 
 Task response shape:
 
@@ -171,7 +198,7 @@ Optional query: `?status=TODO`, `?status=IN_PROGRESS`, or `?status=DONE`.
 
 ### `POST /tasks`
 
-Creates a task in the shared workspace; `createdBy` is assigned from the authenticated account. `title` is required and trimmed (1–100 characters); `description` is optional (0–500 characters); `status` is optional and defaults to `TODO`. Workspace and creator IDs are never accepted from the request. Unknown fields are rejected.
+ADMIN only. Creates a task in the shared workspace; `createdBy` is assigned from the authenticated account. `title` is required and trimmed (1–100 characters); `description` is optional (0–500 characters); `status` is optional and defaults to `TODO`. Workspace and creator IDs are never accepted from the request. Unknown fields are rejected. A VIEWER receives `403 FORBIDDEN`.
 
 **Request**
 
@@ -189,7 +216,7 @@ Returns one task in the authenticated user's shared workspace, regardless of whi
 
 ### `PATCH /tasks/:id`
 
-Updates one or more fields on any task in the shared workspace. Supply at least one field. `title`, `description` and `status` follow the same limits as `POST /tasks`. Unknown fields are rejected. A task ID outside this workspace returns `404 TASK_NOT_FOUND`. Other signed-in members see the update after they refresh their dashboard.
+ADMIN only. Updates one or more fields on any task in the shared workspace. Supply at least one field. `title`, `description` and `status` follow the same limits as `POST /tasks`. Unknown fields are rejected. A task ID outside this workspace returns `404 TASK_NOT_FOUND`; a VIEWER receives `403 FORBIDDEN`. Other signed-in members see the update after they refresh their dashboard.
 
 **Request**
 
@@ -201,7 +228,7 @@ Updates one or more fields on any task in the shared workspace. Supply at least 
 
 ### `DELETE /tasks/:id`
 
-Deletes a task in the shared workspace after the UI presents an explicit confirmation. On success returns **204** with no body. A missing/out-of-workspace task returns `404 TASK_NOT_FOUND`. The deletion is visible to other members after they refresh.
+ADMIN only. Deletes a task in the shared workspace after the UI presents an explicit confirmation. On success returns **204** with no body. A missing/out-of-workspace task returns `404 TASK_NOT_FOUND`; a VIEWER receives `403 FORBIDDEN`. The deletion is visible to other members after they refresh.
 
 The API contract expects deletion for any task status. One application scenario is intentionally defective; discovering and documenting it is part of the assessment. Do not assume that every documented behavior is implemented correctly.
 

@@ -93,11 +93,17 @@ export const authService = {
       user: {
         id: user.id,
         email: user.email,
+        role: user.role,
         workspace: { id: user.workspace.id, name: user.workspace.name },
       },
       token,
       expiresAt,
     }
+  },
+  async currentUser(userId: string) {
+    const user = await authModel.findUserById(userId)
+    if (!user) throw unauthorized()
+    return user
   },
   async authenticate(header?: string) {
     const token = header?.match(/^Bearer ([A-Za-z0-9_-]{43})$/i)?.[1]

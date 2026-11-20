@@ -2,7 +2,7 @@
 
 ## App overview
 
-**Dohoro Task Desk** is a small shared task-tracking web application. A candidate can create separate local demo accounts using randomly generated one-time passcodes (OTPs), sign in as each user, and collaborate on the same team dashboard and task list. The API and frontend run manually on the candidate's machine; an optional Mailpit Docker sidecar receives OTP email locally without contacting an external provider.
+**Dohoro Task Desk** is a small shared task-tracking web application. A candidate can create separate local demo accounts using randomly generated one-time passcodes (OTPs), keep multiple accounts signed in in one browser tab, and switch between ADMIN and VIEWER roles on the same team dashboard. The API and frontend run manually on the candidate's machine; an optional Mailpit Docker sidecar receives OTP email locally without contacting an external provider.
 
 This repository intentionally contains **one seeded functional defect** for you to investigate. The candidate-facing brief below describes what the app is supposed to do. Your assignment is to create your own QA automation project, discover and report the defect, and submit your test code and findings. The app includes a Mailpit-only Docker Compose file for local email testing, but does not include a test framework or candidate-written tests.
 
@@ -48,6 +48,8 @@ npm run dev
 ```
 
 Open **http://127.0.0.1:5173**. Vite proxies `/api` requests to `http://127.0.0.1:3001`. Keep both terminals running while exploring or testing.
+
+In a fresh/reset database the first account is `ADMIN`; subsequent accounts are `VIEWER`. If local accounts already exist, use the existing ADMIN or reset the disposable database first. While signed in, select **Add account** to sign in/register another user in the same browser. The **Active browser session** selector switches accounts without logging the other sessions out; the session list is shared across tabs, and each tab can select a different active user. ADMIN can manage tasks; VIEWER can read the shared dashboard only.
 
 Frontend environment setting in `qa/frontend/.env.local`:
 
@@ -103,7 +105,7 @@ Choose and set up your own UI/API QA automation framework. Playwright, Cypress, 
 
 This is a deliberately small assessment fixture, not a deployable product. OTP email is captured by a local Mailpit service and is never relayed externally; local fallback mode can display the code without email. There is no SMS service, rate-limiting gateway, HTTPS, or production secrets management. The API and Mailpit bind to loopback and should only be used on a trusted local machine. Never reuse a real password.
 
-The frontend stores its bearer session token in the current browser tab's `sessionStorage`; sign out clears the server session. Local demo records live in SQLite. Stop the API before resetting the database.
+The frontend stores the signed-in account list in browser `localStorage` and the active account choice per tab in `sessionStorage`. Tabs in the same browser share the available sessions but can select different users. Signing out revokes only that session; other saved sessions remain active. Local records live in SQLite. Stop the API before resetting the database.
 
 ## Branch
 

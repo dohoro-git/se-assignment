@@ -12,6 +12,9 @@ export const authController = {
   signIn: asyncHandler(async (req, res) => {
     res.json(await authService.signIn(req.body))
   }),
+  me: asyncHandler(async (req, res) => {
+    res.json({ user: await authService.currentUser(requireSession(req).userId) })
+  }),
   signOut: asyncHandler(async (req, res) => {
     await authService.signOut(requireSession(req).tokenHash)
     res.sendStatus(204)

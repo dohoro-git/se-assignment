@@ -60,8 +60,8 @@ The complete manual configuration, environment settings, and reset instructions 
 1. Choose **Create an account** and use a unique disposable email and a synthetic password of at least 8 characters.
 2. Submit the signup form and read the random six-digit code from the message in Mailpit. It is captured locally and not relayed to an external provider. If using `OTP_DELIVERY=local`, the code is displayed in the app instead.
 3. Verify the account, then sign in.
-4. Create a second account with a different disposable email. Sign in through a separate browser profile/window to use two accounts independently.
-5. Verify that both accounts see the same **Dohoro QA Team** workspace and task list. A member's changes are visible to another member after clicking **Refresh shared tasks**; live push updates are not promised.
+4. In a fresh/reset database, the first verified account is `ADMIN`. From that dashboard select **Add account**, then create a second account with a different disposable email in the same browser; later accounts are `VIEWER`. The account list is shared across tabs, while each tab can choose its own active session. If local accounts already exist, use the existing ADMIN or reset the disposable database first.
+5. Use the **Active browser session** selector to switch without signing out. Verify both accounts see the same **Dohoro QA Team** task list, the ADMIN can manage tasks, the VIEWER is read-only, and signing out one leaves the other session active. Changes appear after **Refresh shared tasks**; live push updates are not promised.
 
 Do not use a real password. Each verified account automatically joins the one local shared workspace. Workspace scope is derived from the authenticated session, not a client-supplied workspace ID.
 
@@ -70,8 +70,8 @@ Do not use a real password. Each verified account automatically joins the one lo
 Use the documented product behavior as the black-box contract. Verify both positive and negative paths, and report discrepancies rather than silently working around them.
 
 - Signup validates email/password, generates an unpredictable one-time code, emails it to Mailpit in SMTP mode, rejects invalid/expired/reused codes, and creates an account after successful verification. In SMTP mode the API must not expose the code in its response. Test the configured delivery-failure path as well.
-- Sign-in creates a usable session. Sign-out revokes it. Protected API routes reject missing or invalid sessions.
-- All verified accounts belong to the shared workspace. Members can see tasks created by other members and can create, read, update, filter, and delete workspace tasks.
+- Sign-in creates a separate, usable session for each account. Multiple accounts can remain signed in and switchable across tabs in the same browser; each tab can select its own active session, and signing out one revokes only that session. Protected routes reject missing/invalid sessions.
+- All verified accounts belong to the shared workspace. The first is `ADMIN` and later accounts are `VIEWER`. Both can read shared tasks; only ADMIN can create, update, or delete. Viewer write attempts must get `403` from the API.
 - Each task identifies its creator. Changes made from one member's session are visible to other members after refresh.
 - Task forms validate required values and field limits and provide useful loading, empty, success, and error feedback.
 - Deletion requires an explicit confirmation, and successful deletion is reflected in the list.

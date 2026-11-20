@@ -5,7 +5,14 @@ import type { Credentials, SignupChallenge } from '../interfaces/auth'
 
 type Mode = 'signin' | 'signup' | 'verify'
 
-export function AuthPage({ signIn, reason }: { signIn: (credentials: Credentials) => Promise<void>; reason: string }) {
+interface AuthPageProps {
+  signIn: (credentials: Credentials) => Promise<void>
+  reason: string
+  onAuthenticated?: () => void
+  onCancel?: () => void
+}
+
+export function AuthPage({ signIn, reason, onAuthenticated, onCancel }: AuthPageProps) {
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,6 +39,7 @@ export function AuthPage({ signIn, reason }: { signIn: (credentials: Credentials
     try {
       if (mode === 'signin') {
         await signIn({ email, password })
+        onAuthenticated?.()
       } else if (mode === 'signup') {
         const next = await signup.request({ email, password })
         setChallenge(next)
@@ -53,8 +61,8 @@ export function AuthPage({ signIn, reason }: { signIn: (credentials: Credentials
     <main className="wrap auth-layout">
       <section className="panel" aria-labelledby="auth-title">
         <p className="eyebrow">Personal task workspace</p>
-        <h1 id="auth-title">{mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create an account' : 'Verify your email'}</h1>
-        <p>{mode === 'verify' ? `Enter the one-time code for ${email}.` : 'Sign in to organize your tasks, or create a local demo account.'}</p>
+        <h1 id="auth-title">{mode === 'signin' ? (onCancel ? 'Add another account' : 'Sign in') : mode === 'signup' ? 'Create an account' : 'Verify your email'}</h1>
+        <p>{mode === 'verify' ? `Enter the one-time code for ${email}.` : 'Sign in to open a separate browser session, or create a local demo account.'}</p>
         {message && <p className="notice" role="status">{message}</p>}
         {error && <p className="error" role="alert">{error}</p>}
         {mode === 'verify' && challenge?.delivery.channel === 'local' && (
@@ -91,6 +99,7 @@ export function AuthPage({ signIn, reason }: { signIn: (credentials: Credentials
           <button type="button" disabled={pending} onClick={() => navigate(mode === 'signin' ? 'signup' : 'signin')}>
             {mode === 'signin' ? 'Create an account' : 'Back to sign in'}
           </button>
+          {onCancel && <button type="button" disabled={pending} onClick={onCancel}>Return to active account</button>}
         </div>
       </section>
     </main>
