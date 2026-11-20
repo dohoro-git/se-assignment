@@ -74,6 +74,10 @@ Backend changes must follow **routes → controllers → services → models →
 
 Frontend work belongs in `frontend/src/features/<feature-name>/` with `components/`, `hooks/`, `tests/`, `routes/`, `interfaces/`, and `types/`. The starter includes `vehicles` and `maintenance` feature folders. See [`CODING_STANDARDS.md`](CODING_STANDARDS.md) and [`frontend/README.md`](frontend/README.md) for detailed conventions.
 
+## Independent QA assessment (branch `qa-assessment`)
+
+This branch also contains a separate local-only task dashboard for a QA automation exercise. It uses manual Node.js setup (no Docker), exposes its own API and frontend under `qa/`, simulates OTP delivery locally, and leaves candidates to build their own automation framework. Start with [`qa/README.md`](qa/README.md) for setup, API reference, candidate brief, and rubric. The existing fleet-maintenance assignment remains unchanged.
+
 ---
 
 ## Your Tasks
