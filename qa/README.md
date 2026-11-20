@@ -2,7 +2,7 @@
 
 ## App overview
 
-**Dohoro Task Desk** is a small personal task-tracking web application. A candidate can create a local demo account using a randomly generated one-time passcode (OTP), sign in, and manage their own tasks from a dashboard. The app and API run directly on the candidate's machine; no Docker, mail provider, or third-party service is needed.
+**Dohoro Task Desk** is a small shared task-tracking web application. A candidate can create separate local demo accounts using randomly generated one-time passcodes (OTPs), sign in as each user, and collaborate on the same team dashboard and task list. The app and API run directly on the candidate's machine; no Docker, mail provider, or third-party service is needed.
 
 This repository intentionally contains **one seeded functional defect** for you to investigate. The candidate-facing brief below describes what the app is supposed to do. Your assignment is to create your own QA automation project, discover and report the defect, and submit your test code and findings. The starter does not include a test framework or candidate-written tests.
 
@@ -94,4 +94,4 @@ This assessment setup is on branch `qa-assessment` in the engineering assessment
 
 ---
 
-*Short app description: A local-only task dashboard with OTP-assisted account creation and per-account task CRUD, provided as a target for an independent QA automation assessment.*
+*Short app description: A local-only shared team dashboard with OTP-assisted accounts, shared task CRUD, and a target for an independent QA automation assessment.*

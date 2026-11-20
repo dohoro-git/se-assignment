@@ -7,13 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Workspace {
+  id        String   @id
+  name      String
+  createdAt DateTime @default(now())
+  members   User[]
+  tasks     Task[]
+}
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
   passwordHash String
+  workspaceId  String
   createdAt    DateTime  @default(now())
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
   sessions     Session[]
-  tasks        Task[]
+  tasks        Task[]    @relation("TaskCreator")
+
+  @@index([workspaceId])
 }
 
 model SignupChallenge {
@@ -42,13 +54,16 @@ enum TaskStatus {
 
 model Task {
   id          String     @id @default(uuid())
-  userId      String
+  workspaceId String
+  createdById String
   title       String
   description String     @default("")
   status      TaskStatus @default(TODO)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy   User       @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
 
-  @@index([userId, createdAt])
+  @@index([workspaceId, createdAt])
+  @@index([createdById])
 }

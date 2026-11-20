@@ -1,5 +1,6 @@
 export interface SessionContext {
   userId: string
+  workspaceId: string
   tokenHash: string
 }
 

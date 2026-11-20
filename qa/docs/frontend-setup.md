@@ -60,7 +60,7 @@ qa/frontend/src/
         └── routes/
 ```
 
-The application has no third-party UI kit. Forms use native browser controls and accessible labels. Requests go through `shared/api/client.ts`; the API remains authoritative for validation, authentication, and user-specific data access.
+The application has no third-party UI kit. Forms use native browser controls and accessible labels. Requests go through `shared/api/client.ts`; the API remains authoritative for validation, authentication, and workspace membership. Every verified user lands in the same shared dashboard. For collaboration checks, sign into two separate browser profiles and use **Refresh shared tasks** to see the other member's changes.
 
 ## Troubleshooting
 

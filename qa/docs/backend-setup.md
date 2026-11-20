@@ -19,7 +19,7 @@ npm run db:setup
 npm run dev
 ```
 
-The API binds to loopback and listens at `http://127.0.0.1:3001`. The health endpoint is `GET http://127.0.0.1:3001/api/health` and needs no authentication. `npm run dev` watches TypeScript source changes.
+The API binds to loopback and listens at `http://127.0.0.1:3001`. The health endpoint is `GET http://127.0.0.1:3001/api/health` and needs no authentication. `npm run dev` watches TypeScript source changes. On the first verified signup the API creates the shared `Dohoro QA Team` workspace; every subsequent verified signup joins it automatically. There is no invitation or workspace-selection step.
 
 Build and run the compiled API if desired:
 

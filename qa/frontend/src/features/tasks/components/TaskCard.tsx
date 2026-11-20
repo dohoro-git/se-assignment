@@ -17,6 +17,7 @@ export function TaskCard({ task, busy, confirming, edit, confirmDelete, remove, 
         <span className="badge">{statusLabel[task.status]}</span>
       </div>
       {task.description && <p>{task.description}</p>}
+      <p className="task-meta">Added by {task.createdBy.email}</p>
       {confirming ? (
         <div className="confirm">
           <p>Delete this task? This cannot be undone.</p>

@@ -39,13 +39,18 @@ export function DashboardPage({ session, clearSession }: { session: Session; cle
   return (
     <main className="wrap dashboard">
       <div className="row heading">
-        <div><p className="eyebrow">Dashboard</p><h1>My tasks</h1><p>Signed in as {session.user.email}</p></div>
+        <div>
+          <p className="eyebrow">Shared team dashboard</p>
+          <h1>{session.user.workspace.name}</h1>
+          <p>Signed in as {session.user.email}</p>
+        </div>
         <button disabled={busy} type="button" onClick={() => void signOut()}>{signingOut ? 'Signing out…' : 'Sign out'}</button>
       </div>
+      <p className="notice" role="note">Tasks are shared with all verified team accounts. Refresh to see changes made by another member.</p>
       {signOutError && <p className="error" role="alert">{signOutError}</p>}
       {data.error && <p className="error" role="alert">{data.error}</p>}
       {data.notice && <p className="notice" role="status">{data.notice}</p>}
-      {data.state === 'loading' && <p role="status">Loading tasks…</p>}
+      {data.state === 'loading' && <p role="status">Loading shared tasks…</p>}
       {data.state === 'error' && <button type="button" onClick={data.retry}>Retry loading tasks</button>}
       {data.state === 'ready' && (
         <>
@@ -57,7 +62,10 @@ export function DashboardPage({ session, clearSession }: { session: Session; cle
               <option value="all">All statuses</option>
               {taskStatuses.map((status) => <option key={status} value={status}>{statusLabel[status]}</option>)}
             </select></label>
-            <button className="primary" disabled={busy} type="button" onClick={() => { setConfirmation(null); setEditor('new') }}>New task</button>
+            <div className="actions">
+              <button disabled={busy} type="button" onClick={() => void data.refresh()}>{busy ? 'Refreshing…' : 'Refresh shared tasks'}</button>
+              <button className="primary" disabled={busy} type="button" onClick={() => { setConfirmation(null); setEditor('new') }}>New task</button>
+            </div>
           </div>
           {editor && <TaskForm key={editor === 'new' ? 'new' : editor.id} task={editor === 'new' ? undefined : editor} busy={busy} cancel={() => setEditor(null)} save={async (input) => {
             const ok = await data.save(input, editor === 'new' ? undefined : editor.id)
@@ -65,8 +73,8 @@ export function DashboardPage({ session, clearSession }: { session: Session; cle
             return ok
           }} />}
           <section aria-labelledby="task-list-title" className="task-list">
-            <h2 id="task-list-title">Tasks</h2>
-            {!visible.length && <p className="panel">{data.tasks.length ? 'No tasks match this filter.' : 'No tasks yet. Create your first task.'}</p>}
+            <h2 id="task-list-title">Shared tasks</h2>
+            {!visible.length && <p className="panel">{data.tasks.length ? 'No tasks match this filter.' : 'No shared tasks yet. Create the first one.'}</p>}
             {visible.map((task) => (
               <TaskCard key={task.id} task={task} busy={busy} confirming={confirmation === task.id}
                 edit={() => { setConfirmation(null); setEditor(task) }}

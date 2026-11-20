@@ -1,9 +1,10 @@
 import { Prisma } from '@prisma/client'
 import { prisma } from '../db/client'
+import { SHARED_WORKSPACE } from '../types/workspace'
 
 export const authModel = {
   findUser(email: string) {
-    return prisma.user.findUnique({ where: { email } })
+    return prisma.user.findUnique({ where: { email }, include: { workspace: true } })
   },
   saveChallenge(data: Prisma.SignupChallengeCreateInput) {
     return prisma.signupChallenge.upsert({ where: { email: data.email }, create: data, update: data })
@@ -23,7 +24,15 @@ export const authModel = {
         where: { id, attemptsLeft: { gt: 0 }, expiresAt: { gt: new Date() } },
       })
       if (!removed.count) return null
-      return tx.user.create({ data: { email, passwordHash }, select: { id: true, email: true } })
+      const workspace = await tx.workspace.upsert({
+        where: { id: SHARED_WORKSPACE.id },
+        create: SHARED_WORKSPACE,
+        update: {},
+      })
+      return tx.user.create({
+        data: { email, passwordHash, workspaceId: workspace.id },
+        select: { id: true, email: true, workspace: { select: { id: true, name: true } } },
+      })
     })
   },
   createSession(data: Prisma.SessionUncheckedCreateInput) {
@@ -32,7 +41,11 @@ export const authModel = {
   findSession(tokenHash: string) {
     return prisma.session.findFirst({
       where: { tokenHash, expiresAt: { gt: new Date() } },
-      include: { user: { select: { id: true, email: true } } },
+      include: {
+        user: {
+          select: { id: true, email: true, workspaceId: true, workspace: { select: { id: true, name: true } } },
+        },
+      },
     })
   },
   async deleteSession(tokenHash: string) {

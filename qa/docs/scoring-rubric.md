@@ -8,7 +8,7 @@
 | Test strategy and prioritization | 15 | Clear risk-based choices, meaningful regression boundaries, a sensible test pyramid, and rationale; identifies important auth/session/data-loss risks. |
 | Functional and lifecycle coverage | 20 | Signup → OTP → sign-in, protected session/sign-out, task create/read/update/status/filter/delete; includes empty and populated states and checks user-visible outcomes. |
 | Validation, boundaries, and negative cases | 15 | Required/malformed fields, input length and status boundaries, invalid OTP/credentials/session, duplicate/repeated actions, API errors, and useful assertions. |
-| Tenant/user isolation and data management | 10 | Exercises separate accounts or equivalent ownership boundaries; uses unique/disposable test data and reliable setup/cleanup without relying on fixed preexisting records. |
+| Multi-user collaboration and data management | 10 | Uses separate accounts/sessions to verify shared visibility, creator attribution, and updates/CRUD across members; checks authentication boundaries and uses unique/disposable test data with reliable setup/cleanup. |
 | Defect discovery and regression | 10 | Finds the seeded issue, supplies a stable automated reproduction, distinguishes expected/actual results, explains impact/severity, and identifies a regression test. |
 | Maintainability and diagnostics | 10 | Readable tests/helpers, sensible selectors/waits, deterministic assertions, actionable failure output, and avoidance of sleeps or brittle implementation-dependent checks. |
 | Accessibility, responsive, and browser considerations | 5 | At least targeted keyboard/accessibility and narrow-viewport coverage or a reasoned explanation of scope. |

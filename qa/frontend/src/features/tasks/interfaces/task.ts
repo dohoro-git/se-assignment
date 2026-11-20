@@ -13,8 +13,12 @@ export interface TaskInput {
   status: TaskStatus
 }
 
-export interface Task extends TaskInput {
+export interface Task {
   id: string
+  title: string
+  description: string
+  status: TaskStatus
   createdAt: string
   updatedAt: string
+  createdBy: { id: string; email: string }
 }

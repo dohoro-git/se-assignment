@@ -22,7 +22,7 @@ Errors use JSON with a stable `code` and human-readable `error`; validation erro
 |---|---|---|
 | `400` | `INVALID_JSON`, `VALIDATION_ERROR`, `OTP_INVALID` | Malformed JSON, invalid request data, or invalid/expired OTP |
 | `401` | `UNAUTHORIZED`, `INVALID_CREDENTIALS` | Missing/expired session or wrong sign-in credentials |
-| `404` | `TASK_NOT_FOUND`, `ROUTE_NOT_FOUND` | No matching user-owned task or endpoint |
+| `404` | `TASK_NOT_FOUND`, `ROUTE_NOT_FOUND` | No matching task in the authenticated user's shared workspace or endpoint |
 | `409` | `ACCOUNT_EXISTS`, `TASK_DELETE_CONFLICT` | Duplicate account or task deletion conflict |
 | `413` | `PAYLOAD_TOO_LARGE` | JSON request body exceeds 10 KB |
 | `429` | `OTP_ATTEMPTS_EXCEEDED` | OTP challenge used all attempts |
@@ -83,8 +83,16 @@ Consumes a valid signup challenge and creates the account. The challenge can be 
 **201 response**
 
 ```json
-{ "user": { "id": "f44945f9-a5f7-47c2-9204-539e5751714e", "email": "qa-example@example.test" } }
+{
+  "user": {
+    "id": "f44945f9-a5f7-47c2-9204-539e5751714e",
+    "email": "qa-example@example.test",
+    "workspace": { "id": "dohoro-qa-team", "name": "Dohoro QA Team" }
+  }
+}
 ```
+
+Every verified signup joins the shared team workspace automatically; no invite or workspace ID is supplied by the user.
 
 Invalid, expired, consumed, or exhausted challenges return a `400` (`429` once no attempts remain). To restart, request a new code.
 
@@ -102,7 +110,11 @@ Starts an eight-hour server-side session. Email matching uses normalized lowerca
 
 ```json
 {
-  "user": { "id": "f44945f9-a5f7-47c2-9204-539e5751714e", "email": "qa-example@example.test" },
+  "user": {
+    "id": "f44945f9-a5f7-47c2-9204-539e5751714e",
+    "email": "qa-example@example.test",
+    "workspace": { "id": "dohoro-qa-team", "name": "Dohoro QA Team" }
+  },
   "token": "<random 43-character bearer token>",
   "expiresAt": "2026-11-20T16:46:03.000Z"
 }
@@ -118,7 +130,7 @@ Requires `Authorization: Bearer <token>`. Revokes the current server session.
 
 ## Tasks
 
-All task endpoints require a valid bearer session. Every task read and write is scoped to the signed-in user. Task statuses are `TODO`, `IN_PROGRESS`, and `DONE`.
+All task endpoints require a valid bearer session. Every OTP-verified user automatically belongs to the single shared `Dohoro QA Team` workspace. Task reads and writes are scoped to the workspace ID from the authenticated session; any member can work with the same task list. The client must not provide a workspace ID for access control. Task statuses are `TODO`, `IN_PROGRESS`, and `DONE`.
 
 Task response shape:
 
@@ -129,21 +141,22 @@ Task response shape:
   "description": "Try with a disposable inbox",
   "status": "TODO",
   "createdAt": "2026-11-20T02:00:00.000Z",
-  "updatedAt": "2026-11-20T02:00:00.000Z"
+  "updatedAt": "2026-11-20T02:00:00.000Z",
+  "createdBy": { "id": "f44945f9-a5f7-47c2-9204-539e5751714e", "email": "qa-example@example.test" }
 }
 ```
 
 ### `GET /tasks`
 
-Lists the current user's tasks, newest-created first. With no tasks, returns an empty array.
+Lists every task in the authenticated user's shared workspace, including tasks created by other members, newest-created first. Each object identifies its creator in `createdBy`. With no tasks, returns an empty array. Changes made by another signed-in user are visible after refreshing this endpoint or the dashboard.
 
 Optional query: `?status=TODO`, `?status=IN_PROGRESS`, or `?status=DONE`.
 
-**200 response** — array of task objects. Example: `[ { "id": "...", "title": "Check account flow", "description": "", "status": "TODO", "createdAt": "2026-11-20T02:00:00.000Z", "updatedAt": "2026-11-20T02:00:00.000Z" } ]`
+**200 response** — array of task objects. Example: `[ { "id": "...", "title": "Check account flow", "description": "", "status": "TODO", "createdAt": "2026-11-20T02:00:00.000Z", "updatedAt": "2026-11-20T02:00:00.000Z", "createdBy": { "id": "...", "email": "qa-example@example.test" } } ]`
 
 ### `POST /tasks`
 
-Creates a task for the current user. `title` is required and trimmed (1–100 characters); `description` is optional (0–500 characters); `status` is optional and defaults to `TODO`. Unknown fields are rejected.
+Creates a task in the shared workspace; `createdBy` is assigned from the authenticated account. `title` is required and trimmed (1–100 characters); `description` is optional (0–500 characters); `status` is optional and defaults to `TODO`. Workspace and creator IDs are never accepted from the request. Unknown fields are rejected.
 
 **Request**
 
@@ -155,13 +168,13 @@ Creates a task for the current user. `title` is required and trimmed (1–100 ch
 
 ### `GET /tasks/:id`
 
-Returns one task belonging to the current user.
+Returns one task in the authenticated user's shared workspace, regardless of which member created it.
 
-**200 response** — task object. **404 `TASK_NOT_FOUND`** for an unknown ID and for an ID belonging to another user (ownership is not disclosed).
+**200 response** — task object. **404 `TASK_NOT_FOUND`** for an unknown ID or an ID outside the current workspace.
 
 ### `PATCH /tasks/:id`
 
-Updates one or more task fields. Supply at least one field. `title`, `description` and `status` follow the same limits as `POST /tasks`. Unknown fields are rejected. A task ID not owned by this user returns `404 TASK_NOT_FOUND`.
+Updates one or more fields on any task in the shared workspace. Supply at least one field. `title`, `description` and `status` follow the same limits as `POST /tasks`. Unknown fields are rejected. A task ID outside this workspace returns `404 TASK_NOT_FOUND`. Other signed-in members see the update after they refresh their dashboard.
 
 **Request**
 
@@ -173,7 +186,7 @@ Updates one or more task fields. Supply at least one field. `title`, `descriptio
 
 ### `DELETE /tasks/:id`
 
-Deletes a task owned by the current user after the UI presents an explicit confirmation. On success returns **204** with no body. A missing/foreign task returns `404 TASK_NOT_FOUND`.
+Deletes a task in the shared workspace after the UI presents an explicit confirmation. On success returns **204** with no body. A missing/out-of-workspace task returns `404 TASK_NOT_FOUND`. The deletion is visible to other members after they refresh.
 
 The API contract expects deletion for any task status. One application scenario is intentionally defective; discovering and documenting it is part of the assessment. Do not assume that every documented behavior is implemented correctly.
 

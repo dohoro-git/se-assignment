@@ -18,33 +18,33 @@ const updateInput = fields.partial().refine((data) => Object.keys(data).length >
 const listInput = z.object({ status: fields.shape.status.optional() }).strict()
 
 function notFound() {
-  return new AppError(404, 'TASK_NOT_FOUND', 'Task not found.')
+  return new AppError(404, 'TASK_NOT_FOUND', 'Task not found in this shared workspace.')
 }
 
 export const taskService = {
-  list(userId: string, query: unknown) {
+  list(workspaceId: string, query: unknown) {
     const { status } = parseInput(listInput, query)
-    return taskModel.list(userId, status)
+    return taskModel.list(workspaceId, status)
   },
-  async get(userId: string, id: string) {
-    const task = await taskModel.find(userId, id)
+  async get(workspaceId: string, id: string) {
+    const task = await taskModel.find(workspaceId, id)
     if (!task) throw notFound()
     return task
   },
-  create(userId: string, body: unknown) {
-    return taskModel.create(userId, parseInput(createInput, body))
+  create(workspaceId: string, createdById: string, body: unknown) {
+    return taskModel.create(workspaceId, createdById, parseInput(createInput, body))
   },
-  async update(userId: string, id: string, body: unknown) {
-    const task = await taskModel.update(userId, id, parseInput(updateInput, body))
+  async update(workspaceId: string, id: string, body: unknown) {
+    const task = await taskModel.update(workspaceId, id, parseInput(updateInput, body))
     if (!task) throw notFound()
     return task
   },
-  async delete(userId: string, id: string) {
-    const task = await taskModel.find(userId, id)
+  async delete(workspaceId: string, id: string) {
+    const task = await taskModel.find(workspaceId, id)
     if (!task) throw notFound()
     if (task.status === TaskStatus.DONE) {
       throw new AppError(409, 'TASK_DELETE_CONFLICT', 'This task cannot be deleted.')
     }
-    if (!(await taskModel.delete(userId, id))) throw notFound()
+    if (!(await taskModel.delete(workspaceId, id))) throw notFound()
   },
 }

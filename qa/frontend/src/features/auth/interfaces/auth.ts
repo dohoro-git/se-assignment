@@ -3,9 +3,15 @@ export interface Credentials {
   password: string
 }
 
+export interface Workspace {
+  id: string
+  name: string
+}
+
 export interface User {
   id: string
   email: string
+  workspace: Workspace
 }
 
 export interface Session {

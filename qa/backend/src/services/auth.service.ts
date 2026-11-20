@@ -80,7 +80,15 @@ export const authService = {
     const token = randomBytes(32).toString('base64url')
     const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000)
     await authModel.createSession({ tokenHash: digest(token), userId: user.id, expiresAt })
-    return { user: { id: user.id, email: user.email }, token, expiresAt }
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        workspace: { id: user.workspace.id, name: user.workspace.name },
+      },
+      token,
+      expiresAt,
+    }
   },
   async authenticate(header?: string) {
     const token = header?.match(/^Bearer ([A-Za-z0-9_-]{43})$/i)?.[1]

@@ -43,6 +43,21 @@ export function useTasks(token: string) {
     }
   }
 
+  async function refresh() {
+    setBusy(true)
+    setError('')
+    setNotice('')
+    try {
+      setTasks(await api<Task[]>('/tasks', { token }))
+      setNotice('Shared dashboard refreshed.')
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) setExpired(true)
+      else setError(err instanceof Error ? err.message : 'Could not refresh the dashboard.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   function save(input: TaskInput, id?: string) {
     return run(async () => {
       const task = await api<Task>(id ? `/tasks/${id}` : '/tasks', { method: id ? 'PATCH' : 'POST', token, body: input })
@@ -63,5 +78,5 @@ export function useTasks(token: string) {
     reload((key) => key + 1)
   }
 
-  return { tasks, state, error, notice, busy, expired, retry, save, remove }
+  return { tasks, state, error, notice, busy, expired, retry, refresh, save, remove }
 }

@@ -46,6 +46,7 @@ output { font-family: monospace; font-size: 1.1rem; font-weight: bold; }
 .task-list { display: grid; gap: .65rem; margin-top: 1rem; }
 .task-card h3 { margin-bottom: 0; }
 .task-card p { white-space: pre-wrap; }
+.task-card .task-meta { color: #5c6c75; font-size: .85rem; }
 .task-card .actions { margin-top: .65rem; }
 .badge { border-radius: 1rem; background: #dff3ee; color: #114d45; font-size: .85rem; padding: .2rem .6rem; }
 .confirm { margin-top: .75rem; }

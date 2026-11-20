@@ -9,7 +9,7 @@ function readSession(): Session | null {
     const stored = sessionStorage.getItem(KEY)
     if (!stored) return null
     const session: Session = JSON.parse(stored)
-    if (Date.parse(session.expiresAt) > Date.now() && session.token && session.user?.email) return session
+    if (Date.parse(session.expiresAt) > Date.now() && session.token && session.user?.email && session.user.workspace?.id) return session
   } catch {
     // Missing or inaccessible browser storage is not required for using the app.
   }
