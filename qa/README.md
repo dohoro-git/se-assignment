@@ -90,7 +90,7 @@ The frontend stores its bearer session token in the current browser tab's `sessi
 
 ## Branch
 
-This assessment setup is on branch `qa-assessment` in the engineering assessment repository. It is independent of the existing fleet-maintenance task and adds no Docker configuration or QA framework dependency to the root project.
+This QA assessment target is on branch `qa-assessment`. It provides a local web application and API for candidates to test; automation framework selection and test organization are left to each candidate.
 
 ---
 
