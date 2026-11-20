@@ -23,12 +23,12 @@ The starter deliberately contains no prewritten QA test framework, browser autom
 
 ## App startup
 
-Follow [`../README.md`](../README.md). Start the API and frontend manually in separate terminal windows; do not use Docker. The web app is at `http://127.0.0.1:5173` and the API health check is at `http://127.0.0.1:3001/api/health`.
+Follow [`../README.md`](../README.md). Start the API and frontend manually in separate terminal windows. For the default email-delivery mode, start the **Mailpit-only** sidecar with `docker compose -f qa/mailpit/compose.yaml up -d`; the app services are not containerized. Mailpit is at `http://127.0.0.1:8025`, the web app at `http://127.0.0.1:5173`, and API health at `http://127.0.0.1:3001/api/health`. For automation, Mailpit's local HTTP API can retrieve the latest matching message; see [`../mailpit/README.md`](../mailpit/README.md). If Docker is unavailable, configure `OTP_DELIVERY=local` as described in the setup docs.
 
 To create a test account:
 
 1. Choose **Create an account** and enter a unique disposable email and synthetic password (8+ characters).
-2. Submit signup. The six-digit OTP appears in the expandable **Local OTP inbox** panel. No email is sent.
+2. In the default SMTP mode, open Mailpit from the signup page and read the OTP email. It is captured locally and never sent to an external mail provider. In `OTP_DELIVERY=local` fallback mode, the six-digit code appears directly in the browser.
 3. Enter the displayed OTP to verify, then sign in with the same email/password.
 4. Create a second account with a different disposable email, sign in from a separate browser profile/window, and compare both users' shared task dashboards. Exercise task creation, status changes, editing, filtering, deletion confirmation, refresh, and sign-out from both sessions.
 
@@ -38,7 +38,7 @@ The API docs at [`api.md`](api.md) describe the contract and status codes. Setup
 
 Use these requirements as a black-box contract, including error paths:
 
-- Account signup should validate email/password, generate an unpredictable one-time code, visibly present the local code, reject invalid/expired/reused challenges, and allow the user to sign in after successful verification.
+- Account signup should validate email/password, generate an unpredictable one-time code, send it through the configured local Mailpit SMTP receiver, reject invalid/expired/reused challenges, and allow the user to sign in after successful verification. In SMTP mode the code should arrive in Mailpit rather than be exposed in the API response.
 - Sign-in should create a usable session; sign-out should revoke it. Protected screens and APIs should reject missing/invalid sessions.
 - Every OTP-verified account is a member of the same `Dohoro QA Team` workspace. Members should see the same task list, including tasks created by other members, and can create/read/update/filter/delete workspace tasks. The server derives workspace membership from the authenticated session; clients cannot select or impersonate another workspace/member.
 - A task should identify its creator. Changes made by one signed-in member should be visible to another member after that member refreshes the dashboard. Live push updates are not promised.
@@ -50,9 +50,9 @@ Treat the contract as expected behavior, not proof the current app is correct. I
 
 ## Suggested investigation (not a test checklist)
 
-Choose coverage using risk and impact. Consider exploring multiple signup/auth states, input boundaries, repeated/parallel interactions, task lifecycle combinations, two independent member sessions sharing and changing the same tasks, authorization failures, error recovery, browser refresh, keyboard-only operation, and screen resizing. You do not need to automate every possible case; explain why your selected cases matter.
+Choose coverage using risk and impact. Consider exploring multiple signup/auth states, email delivery and SMTP-unavailable behavior, input boundaries, repeated/parallel interactions, task lifecycle combinations, two independent member sessions sharing and changing the same tasks, authorization failures, error recovery, browser refresh, keyboard-only operation, and screen resizing. You do not need to automate every possible case; explain why your selected cases matter.
 
-Do not assume the local OTP panel is production-grade email delivery. Use the app's local-only behavior. Avoid destructive actions against unrelated data; use the reset/setup instructions for your disposable local database.
+Mailpit is a local test inbox, not a production email provider; messages are not delivered externally. Use unique disposable addresses. Avoid destructive actions against unrelated data; use the reset/setup instructions for your disposable local database.
 
 ## Scoring
 

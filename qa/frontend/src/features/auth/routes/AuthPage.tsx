@@ -57,11 +57,18 @@ export function AuthPage({ signIn, reason }: { signIn: (credentials: Credentials
         <p>{mode === 'verify' ? `Enter the one-time code for ${email}.` : 'Sign in to organize your tasks, or create a local demo account.'}</p>
         {message && <p className="notice" role="status">{message}</p>}
         {error && <p className="error" role="alert">{error}</p>}
-        {mode === 'verify' && challenge && (
-          <details className="notice" key={challenge.challengeId}>
+        {mode === 'verify' && challenge?.delivery.channel === 'local' && (
+          <details className="notice" key={challenge.challengeId} open>
             <summary>Local OTP inbox (no email is sent)</summary>
             <p>Your code: <output aria-label="Local OTP">{challenge.delivery.code}</output>. It expires in {challenge.expiresInSeconds / 60} minutes.</p>
           </details>
+        )}
+        {mode === 'verify' && challenge?.delivery.channel === 'email' && (
+          <p className="notice" role="status">
+            We sent a verification code to {email}. Check the local Mailpit inbox at{' '}
+            <a href="http://127.0.0.1:8025" target="_blank" rel="noreferrer">127.0.0.1:8025</a>.
+            {' '}The code expires in {challenge.expiresInSeconds / 60} minutes.
+          </p>
         )}
         <form onSubmit={submit}>
           <fieldset disabled={pending}>

@@ -1,0 +1,9 @@
+name: dohoro-qa-mailpit
+
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:1025:1025" # Local SMTP receiver for the manually run API
+      - "127.0.0.1:8025:8025" # Local inbox UI
+    restart: unless-stopped

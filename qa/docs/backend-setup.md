@@ -2,14 +2,31 @@
 
 ## Summary
 
-The API is a layered Express + TypeScript service in `qa/backend`, with Prisma ORM and a local SQLite database. Its HTTP routes/controllers call services, and services call models for persistence. This keeps the assessment runnable without Docker, Postgres, an email server, or external accounts.
+The API is a layered Express + TypeScript service in `qa/backend`, with Prisma ORM and a local SQLite database. Its routes/controllers call services, and services call models for persistence. The API is started manually with Node.js. In the default configuration, signup OTPs are sent over SMTP to Mailpit, which is the only container in this assessment; no external email provider is used.
 
 ## Prerequisites
 
 - Node.js 22.12+ (or Node.js 24) and npm
-- No Docker, separate database service, or mail service is needed
+- Docker Desktop only if you want email delivery through Mailpit (recommended for the assessment)
+- No PostgreSQL service, app container, or external mail account is required
 
-## Install, initialize, and run
+## Start Mailpit for the default SMTP configuration
+
+From the repository root:
+
+```bash
+docker compose -f qa/mailpit/compose.yaml up -d
+```
+
+Mailpit receives SMTP on `127.0.0.1:1025`. View messages at **http://127.0.0.1:8025**. This Compose file starts the mail receiver only; the API and frontend are still started manually.
+
+To stop Mailpit:
+
+```bash
+docker compose -f qa/mailpit/compose.yaml down
+```
+
+## Install, initialize, and run the API manually
 
 ```bash
 cd qa/backend
@@ -19,7 +36,7 @@ npm run db:setup
 npm run dev
 ```
 
-The API binds to loopback and listens at `http://127.0.0.1:3001`. The health endpoint is `GET http://127.0.0.1:3001/api/health` and needs no authentication. `npm run dev` watches TypeScript source changes. On the first verified signup the API creates the shared `Dohoro QA Team` workspace; every subsequent verified signup joins it automatically. There is no invitation or workspace-selection step.
+The API binds to loopback at `http://127.0.0.1:3001`. The unauthenticated health endpoint is `GET http://127.0.0.1:3001/api/health`. `npm run dev` watches TypeScript source changes. On the first verified signup, the API creates the shared `Dohoro QA Team` workspace; subsequent verified signups join it automatically.
 
 Build and run the compiled API if desired:
 
@@ -35,14 +52,21 @@ npm start
 ```dotenv
 DATABASE_URL="file:./qa.sqlite"
 PORT=3001
+OTP_DELIVERY=smtp
+SMTP_HOST=127.0.0.1
+SMTP_PORT=1025
+SMTP_FROM="Dohoro Task Desk <no-reply@example.test>"
 ```
 
-- `DATABASE_URL` is required by Prisma. A relative SQLite URL is resolved against `prisma/schema.prisma`; the resulting file is `qa/backend/prisma/qa.sqlite`.
-- `PORT` is optional and defaults to `3001`. Choose an available port between 1 and 65535. If changed, also update `API_PROXY_TARGET` in `qa/frontend/.env.local` and restart both servers.
-- `npm run db:setup` applies the checked-in Prisma migration and generates the Prisma client. Run this once after installation or after a database reset.
-- `npm run db:reset` removes local database data and reapplies migrations. Stop the API first. Run `npm run db:setup` after reset to generate the client as well.
+- `DATABASE_URL` is required by Prisma. The relative SQLite URL resolves against `prisma/schema.prisma`; the database file is `qa/backend/prisma/qa.sqlite`.
+- `PORT` is optional and defaults to `3001`. If changed, update `API_PROXY_TARGET` in `qa/frontend/.env.local` and restart both app processes.
+- `OTP_DELIVERY=smtp` is the assessment default. It sends the random OTP to the configured local SMTP receiver. `SMTP_HOST`, `SMTP_PORT`, and `SMTP_FROM` have the values shown above by default.
+- `OTP_DELIVERY=local` is an offline fallback: the app shows the OTP in the browser and the signup API response. This fallback does not send an email.
+- If SMTP is selected but Mailpit is unavailable, signup returns `503 OTP_DELIVERY_FAILED` and removes the undelivered challenge. Start Mailpit and retry.
+- `npm run db:setup` applies the checked-in SQLite migrations and generates Prisma Client. Run it after installation and after a reset.
+- `npm run db:reset` resets local database data. Stop the API first, then run `npm run db:setup` to regenerate the client.
 
-Do not commit `.env`, SQLite database files, or any real user credentials. The OTP is returned to the caller for local display; there is no mail delivery configuration.
+Do not commit `.env`, SQLite files, OTPs, or real user credentials. The SMTP receiver and inbox are loopback-only and do not relay messages externally.
 
 ## Backend structure
 
@@ -56,7 +80,7 @@ qa/backend/
     ├── controllers/            # HTTP request/response handling
     ├── routes/                 # Endpoint declarations
     ├── middleware/             # Auth, async and error handling
-    ├── services/               # Input validation and application rules
+    ├── services/               # Validation, rules and OTP delivery
     ├── models/                 # Prisma persistence access
     ├── db/client.ts
     └── errors/app-error.ts
@@ -66,8 +90,10 @@ qa/backend/
 
 - **`DATABASE_URL` missing:** copy `.env.example` to `.env` in `qa/backend`.
 - **Database has no schema:** stop the API and run `npm run db:setup`.
-- **Address already in use:** change `PORT` and matching frontend proxy target.
-- **OTP not emailed:** expected; the code is displayed in the local inbox UI and in the signup-request API response.
-- **Port mismatch or API unavailable in browser:** check `GET /api/health` directly, then confirm the frontend proxy target.
+- **Signup returns `503 OTP_DELIVERY_FAILED`:** check `docker compose -f qa/mailpit/compose.yaml ps`, start Mailpit, and confirm SMTP port `1025` is free and reachable.
+- **OTP email not visible:** open `http://127.0.0.1:8025`, use the same email address entered in signup, and check that `OTP_DELIVERY=smtp`.
+- **No Docker available:** set `OTP_DELIVERY=local` and restart the API; the app then displays the code directly.
+- **Address already in use:** change `PORT` and the frontend proxy target, or free the local port.
+- **Port mismatch/API unavailable:** check `GET /api/health`, then confirm the frontend proxy target.
 
-This backend is a local assessment fixture. The simulated OTP response, loopback-only server and demo password flow are not production authentication practices.
+This backend is a local assessment fixture. Mailpit, demo passwords, and loopback sessions are not production authentication infrastructure.

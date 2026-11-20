@@ -3,6 +3,8 @@ import { promisify } from 'node:util'
 import { z } from 'zod'
 import { AppError } from '../errors/app-error'
 import { authModel } from '../models/auth.model'
+import { deliverSignupOtp } from './otp-delivery.service'
+import type { OtpDelivery } from './otp-delivery.service'
 import { parseInput } from './validation'
 
 const deriveKey = promisify(scrypt)
@@ -52,8 +54,15 @@ export const authService = {
       expiresAt: new Date(Date.now() + OTP_TTL_SECONDS * 1000),
     })
 
-    // The local-only assessment simulates delivery without an email provider.
-    return { challengeId, expiresInSeconds: OTP_TTL_SECONDS, delivery: { channel: 'local', code } }
+    let delivery: OtpDelivery
+    try {
+      delivery = await deliverSignupOtp(input.email, code, OTP_TTL_SECONDS)
+    } catch (error) {
+      await authModel.deleteChallenge(challengeId)
+      throw error
+    }
+
+    return { challengeId, expiresInSeconds: OTP_TTL_SECONDS, delivery }
   },
   async verifySignup(body: unknown) {
     const { challengeId, code } = parseInput(verifyInput, body)

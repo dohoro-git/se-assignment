@@ -23,5 +23,5 @@ export interface Session {
 export interface SignupChallenge {
   challengeId: string
   expiresInSeconds: number
-  delivery: { channel: 'local'; code: string }
+  delivery: { channel: 'local'; code: string } | { channel: 'email' }
 }

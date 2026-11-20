@@ -1,12 +1,22 @@
 # QA Automation Assessment — Dohoro Task Desk
 
-A local shared task dashboard provided as a target for an independent QA automation assessment. Users create separate accounts with a locally displayed OTP, sign in, and collaborate on one shared task list.
+A local shared task dashboard provided as a target for an independent QA automation assessment. Users create separate accounts, receive a random OTP in the local Mailpit inbox, sign in, and collaborate on one shared task list.
 
-## Quick start (manual, no Docker)
+## Quick start
 
-Prerequisites: Node.js 22.12+ (or Node.js 24), npm, and a modern browser.
+The API and web app run manually with Node.js. In the default SMTP mode, Docker is used **only** for the local Mailpit email service. For a no-Docker run, switch to the documented `OTP_DELIVERY=local` fallback.
 
-**Terminal 1 — API:**
+### 1. Start Mailpit for email-based OTPs
+
+From the repository root:
+
+```bash
+docker compose -f qa/mailpit/compose.yaml up -d
+```
+
+Inbox: [http://127.0.0.1:8025](http://127.0.0.1:8025) · SMTP: `127.0.0.1:1025`
+
+### 2. Start the API manually
 
 ```bash
 cd qa/backend
@@ -18,7 +28,9 @@ npm run dev
 
 API: `http://127.0.0.1:3001` · Health: `http://127.0.0.1:3001/api/health`
 
-**Terminal 2 — web app:**
+### 3. Start the web app manually
+
+In a second terminal:
 
 ```bash
 cd qa/frontend
@@ -27,9 +39,11 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Web app: `http://127.0.0.1:5173`. Keep both servers running. The frontend proxies `/api` requests to the local API.
+Web app: `http://127.0.0.1:5173`. The frontend proxies `/api` requests to the local API. Signup OTP messages appear in Mailpit at `http://127.0.0.1:8025`.
 
-Create a second disposable account and sign in using a separate browser profile to check shared dashboard access. Each verified account joins the same local team. The OTP appears in the **Local OTP inbox** panel; no email is sent.
+To run without Docker, set `OTP_DELIVERY=local` in `qa/backend/.env`; the code is then shown in the web app and returned by the signup API. This fallback does not send email.
+
+Create a second disposable account and sign in using a separate browser profile to check shared dashboard access. Each verified account joins the same local team.
 
 ## Candidate task
 
@@ -44,5 +58,6 @@ Create your own QA automation framework and test organization. Playwright, Cypre
 - [Backend setup](qa/docs/backend-setup.md)
 - [API reference](qa/docs/api.md)
 - [Scoring rubric](qa/docs/scoring-rubric.md)
+- [Mailpit setup](qa/mailpit/README.md) — local OTP email testing
 
 Use unique synthetic emails and passwords. Do not include credentials, `.env` files, or generated SQLite databases in your submission. The fixture is local-only and is not production authentication infrastructure.

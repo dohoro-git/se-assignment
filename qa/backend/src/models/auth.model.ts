@@ -12,6 +12,9 @@ export const authModel = {
   findChallenge(id: string) {
     return prisma.signupChallenge.findUnique({ where: { id } })
   },
+  deleteChallenge(id: string) {
+    return prisma.signupChallenge.deleteMany({ where: { id } })
+  },
   async recordFailedAttempt(id: string) {
     await prisma.signupChallenge.updateMany({
       where: { id, attemptsLeft: { gt: 0 }, expiresAt: { gt: new Date() } },

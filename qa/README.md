@@ -2,13 +2,25 @@
 
 ## App overview
 
-**Dohoro Task Desk** is a small shared task-tracking web application. A candidate can create separate local demo accounts using randomly generated one-time passcodes (OTPs), sign in as each user, and collaborate on the same team dashboard and task list. The app and API run directly on the candidate's machine; no Docker, mail provider, or third-party service is needed.
+**Dohoro Task Desk** is a small shared task-tracking web application. A candidate can create separate local demo accounts using randomly generated one-time passcodes (OTPs), sign in as each user, and collaborate on the same team dashboard and task list. The API and frontend run manually on the candidate's machine; an optional Mailpit Docker sidecar receives OTP email locally without contacting an external provider.
 
-This repository intentionally contains **one seeded functional defect** for you to investigate. The candidate-facing brief below describes what the app is supposed to do. Your assignment is to create your own QA automation project, discover and report the defect, and submit your test code and findings. The starter does not include a test framework or candidate-written tests.
+This repository intentionally contains **one seeded functional defect** for you to investigate. The candidate-facing brief below describes what the app is supposed to do. Your assignment is to create your own QA automation project, discover and report the defect, and submit your test code and findings. The app includes a Mailpit-only Docker Compose file for local email testing, but does not include a test framework or candidate-written tests.
 
 ## Manual setup
 
-Prerequisite: Node.js 22.12+ (Node 24 is also supported), npm, and a current desktop browser. There is no Docker requirement.
+Prerequisites: Node.js 22.12+ (Node 24 is also supported), npm, and a current desktop browser. Docker is optional and used only to run Mailpit; the API and web app are started manually.
+
+### Start Mailpit for default email OTPs
+
+From the repository root:
+
+```bash
+docker compose -f qa/mailpit/compose.yaml up -d
+```
+
+Mailpit inbox: **http://127.0.0.1:8025** · SMTP: `127.0.0.1:1025`. The Compose file starts Mailpit only; the backend and frontend remain local Node processes. Stop it with `docker compose -f qa/mailpit/compose.yaml down`.
+
+The sample backend configuration defaults to SMTP, so start Mailpit before signup. If you do not want to run Docker, set `OTP_DELIVERY=local` in `qa/backend/.env` after copying the example; signup then displays the code in the app and API response instead of sending email.
 
 ### 1. Start the API
 
@@ -48,6 +60,10 @@ Backend environment settings in `qa/backend/.env`:
 ```dotenv
 DATABASE_URL="file:./qa.sqlite"
 PORT=3001
+OTP_DELIVERY=smtp
+SMTP_HOST=127.0.0.1
+SMTP_PORT=1025
+SMTP_FROM="Dohoro Task Desk <no-reply@example.test>"
 ```
 
 `DATABASE_URL` is resolved by Prisma relative to `qa/backend/prisma/schema.prisma`, so the SQLite file is `qa/backend/prisma/qa.sqlite`. `PORT` controls the API port. The frontend proxy target must point at that same backend port if you change it.
@@ -70,7 +86,7 @@ Choose and set up your own UI/API QA automation framework. Playwright, Cypress, 
 ## Assessment rules
 
 - Do not change the app's source behavior to make an observed defect disappear. Your submitted tests may use normal test data and account cleanup/reset procedures.
-- Use a disposable test email and password; the OTP is shown only in the local browser inbox panel and API response. Nothing is emailed.
+- Use a disposable test email and password. In default SMTP mode, the OTP is sent to Mailpit's local inbox; in `OTP_DELIVERY=local` fallback mode, it is shown in the browser and signup API response.
 - Keep secrets and generated database files out of your submitted ZIP.
 - Submit your test source, framework/dependency configuration, a short findings report with reproduction steps, and instructions for running your suite.
 
@@ -81,10 +97,11 @@ Choose and set up your own UI/API QA automation framework. Playwright, Cypress, 
 - [Frontend setup and configuration](docs/frontend-setup.md)
 - [Backend setup and configuration](docs/backend-setup.md)
 - [API reference](docs/api.md)
+- [Mailpit setup](mailpit/README.md)
 
 ## Local security note
 
-This is a deliberately small assessment fixture, not a deployable product. OTP delivery is simulated locally; there is no email/SMS service, rate-limiting gateway, HTTPS, or production secrets management. The API binds to loopback and the app should only be used on a trusted local machine. Never reuse a real password.
+This is a deliberately small assessment fixture, not a deployable product. OTP email is captured by a local Mailpit service and is never relayed externally; local fallback mode can display the code without email. There is no SMS service, rate-limiting gateway, HTTPS, or production secrets management. The API and Mailpit bind to loopback and should only be used on a trusted local machine. Never reuse a real password.
 
 The frontend stores its bearer session token in the current browser tab's `sessionStorage`; sign out clears the server session. Local demo records live in SQLite. Stop the API before resetting the database.
 

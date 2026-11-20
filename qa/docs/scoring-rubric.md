@@ -7,7 +7,7 @@
 | Framework ownership and runnable setup | 15 | Candidate independently configures a suitable framework; clean install, browser setup, base URL, and test command are documented; environment/config is not tied to the candidate's machine. |
 | Test strategy and prioritization | 15 | Clear risk-based choices, meaningful regression boundaries, a sensible test pyramid, and rationale; identifies important auth/session/data-loss risks. |
 | Functional and lifecycle coverage | 20 | Signup → OTP → sign-in, protected session/sign-out, task create/read/update/status/filter/delete; includes empty and populated states and checks user-visible outcomes. |
-| Validation, boundaries, and negative cases | 15 | Required/malformed fields, input length and status boundaries, invalid OTP/credentials/session, duplicate/repeated actions, API errors, and useful assertions. |
+| Validation, boundaries, and negative cases | 15 | Required/malformed fields, input length and status boundaries, OTP email received in Mailpit, invalid OTP/credentials/session, SMTP failure, duplicate/repeated actions, API errors, and useful assertions. |
 | Multi-user collaboration and data management | 10 | Uses separate accounts/sessions to verify shared visibility, creator attribution, and updates/CRUD across members; checks authentication boundaries and uses unique/disposable test data with reliable setup/cleanup. |
 | Defect discovery and regression | 10 | Finds the seeded issue, supplies a stable automated reproduction, distinguishes expected/actual results, explains impact/severity, and identifies a regression test. |
 | Maintainability and diagnostics | 10 | Readable tests/helpers, sensible selectors/waits, deterministic assertions, actionable failure output, and avoidance of sleeps or brittle implementation-dependent checks. |
@@ -26,7 +26,7 @@
 - Do not award or deduct points based on whether the candidate selects Playwright vs Cypress (or another appropriate tool).
 - Prefer robust observable outcomes over test count. A few well-designed cases are better than many duplicate assertions.
 - The seeded defect is in the task-delete contract. The assessor should verify the expected and actual behavior locally before scoring; do not tell candidates the defect location in advance.
-- Do not penalize a candidate for acknowledging that security and production email delivery are out of scope for this local fixture, but do reward appropriately testing the simulated OTP flow.
+- Do not expect production email delivery or internet access: Mailpit captures OTP messages locally. Reward testing the SMTP flow, message content/recipient, and fallback or delivery-error behavior where appropriate.
 - A candidate may describe a defect correctly even if a platform issue prevents local automation; award evidence and reasoning proportionally.
 
 ## Suggested assessor notes
