@@ -52,7 +52,7 @@ npm start
 ```dotenv
 DATABASE_URL="file:./qa.sqlite"
 PORT=3001
-OTP_DELIVERY=smtp
+MAILPIT_SETUP=true
 SMTP_HOST=127.0.0.1
 SMTP_PORT=1025
 SMTP_FROM="Dohoro Task Desk <no-reply@example.test>"
@@ -60,9 +60,10 @@ SMTP_FROM="Dohoro Task Desk <no-reply@example.test>"
 
 - `DATABASE_URL` is required by Prisma. The relative SQLite URL resolves against `prisma/schema.prisma`; the database file is `qa/backend/prisma/qa.sqlite`.
 - `PORT` is optional and defaults to `3001`. If changed, update `API_PROXY_TARGET` in `qa/frontend/.env.local` and restart both app processes.
-- `OTP_DELIVERY=smtp` is the assessment default. It sends the random OTP to the configured local SMTP receiver. `SMTP_HOST`, `SMTP_PORT`, and `SMTP_FROM` have the values shown above by default.
-- `OTP_DELIVERY=local` is an offline fallback: the app shows the OTP in the browser and the signup API response. This fallback does not send an email.
-- If SMTP is selected but Mailpit is unavailable, signup returns `503 OTP_DELIVERY_FAILED` and removes the undelivered challenge. Start Mailpit and retry.
+- `MAILPIT_SETUP=true` is the default. It sends the random OTP to the configured local SMTP receiver. `SMTP_HOST`, `SMTP_PORT`, and `SMTP_FROM` have the values shown above by default.
+- `MAILPIT_SETUP=false` disables all SMTP/Mailpit calls. The signup screen shows the OTP in its local verification panel and the signup response contains `delivery.code`. This mode works without Docker or a mail service.
+- If `MAILPIT_SETUP=true` but Mailpit is unavailable, signup returns `503 OTP_DELIVERY_FAILED` and removes the undelivered challenge. Start Mailpit and retry.
+- If using a pre-existing `.env` with the legacy `OTP_DELIVERY=local` setting, it continues to work; prefer `MAILPIT_SETUP=false` for new setups.
 - `npm run db:setup` applies the checked-in SQLite migrations and generates Prisma Client. Run it after installation and after a reset.
 - `npm run db:reset` resets local database data. Stop the API first, then run `npm run db:setup` to regenerate the client.
 
@@ -91,8 +92,8 @@ qa/backend/
 - **`DATABASE_URL` missing:** copy `.env.example` to `.env` in `qa/backend`.
 - **Database has no schema:** stop the API and run `npm run db:setup`.
 - **Signup returns `503 OTP_DELIVERY_FAILED`:** check `docker compose -f qa/mailpit/compose.yaml ps`, start Mailpit, and confirm SMTP port `1025` is free and reachable.
-- **OTP email not visible:** open `http://127.0.0.1:8025`, use the same email address entered in signup, and check that `OTP_DELIVERY=smtp`.
-- **No Docker available:** set `OTP_DELIVERY=local` and restart the API; the app then displays the code directly.
+- **OTP email not visible:** open `http://127.0.0.1:8025`, use the same email address entered in signup, and check that `MAILPIT_SETUP=true`.
+- **Cannot set up Mailpit:** set `MAILPIT_SETUP=false` in `qa/backend/.env` and restart the API; the OTP appears in the app's verification panel and signup response without contacting SMTP.
 - **Address already in use:** change `PORT` and the frontend proxy target, or free the local port.
 - **Port mismatch/API unavailable:** check `GET /api/health`, then confirm the frontend proxy target.
 

@@ -20,7 +20,7 @@ docker compose -f qa/mailpit/compose.yaml up -d
 
 Mailpit inbox: **http://127.0.0.1:8025** · SMTP: `127.0.0.1:1025`. The Compose file starts Mailpit only; the backend and frontend remain local Node processes. Stop it with `docker compose -f qa/mailpit/compose.yaml down`.
 
-The sample backend configuration defaults to SMTP, so start Mailpit before signup. If you do not want to run Docker, set `OTP_DELIVERY=local` in `qa/backend/.env` after copying the example; signup then displays the code in the app and API response instead of sending email.
+The sample backend configuration defaults to Mailpit. If you cannot install or start Mailpit, edit `qa/backend/.env` and set `MAILPIT_SETUP=false`, then restart the API. Signup will display the OTP in the app's local verification panel and return it in the signup response; no SMTP service is used.
 
 ### 1. Start the API
 
@@ -62,7 +62,7 @@ Backend environment settings in `qa/backend/.env`:
 ```dotenv
 DATABASE_URL="file:./qa.sqlite"
 PORT=3001
-OTP_DELIVERY=smtp
+MAILPIT_SETUP=true
 SMTP_HOST=127.0.0.1
 SMTP_PORT=1025
 SMTP_FROM="Dohoro Task Desk <no-reply@example.test>"
@@ -88,7 +88,7 @@ Choose and set up your own UI/API QA automation framework. Playwright, Cypress, 
 ## Assessment rules
 
 - Do not change the app's source behavior to make an observed defect disappear. Your submitted tests may use normal test data and account cleanup/reset procedures.
-- Use a disposable test email and password. In default SMTP mode, the OTP is sent to Mailpit's local inbox; in `OTP_DELIVERY=local` fallback mode, it is shown in the browser and signup API response.
+- Use a disposable test email and password. With `MAILPIT_SETUP=true`, the OTP is sent to Mailpit's local inbox. With `MAILPIT_SETUP=false`, Mailpit is not required and the code appears in the app's local verification panel and signup API response.
 - Keep secrets and generated database files out of your submitted ZIP.
 - Submit your test source, framework/dependency configuration, a short findings report with reproduction steps, and instructions for running your suite.
 

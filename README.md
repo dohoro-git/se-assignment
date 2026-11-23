@@ -4,7 +4,7 @@ A local shared task dashboard provided as a target for an independent QA automat
 
 ## Quick start
 
-The API and web app run manually with Node.js. In the default SMTP mode, Docker is used **only** for the local Mailpit email service. For a no-Docker run, switch to the documented `OTP_DELIVERY=local` fallback.
+The API and web app run manually with Node.js. By default, Docker is used **only** for the local Mailpit email service. If you cannot run Mailpit, set `MAILPIT_SETUP=false` in `qa/backend/.env`; the OTP is then shown in the app instead.
 
 ### 1. Start Mailpit for email-based OTPs
 
@@ -41,7 +41,7 @@ npm run dev
 
 Web app: `http://127.0.0.1:5173`. The frontend proxies `/api` requests to the local API. Signup OTP messages appear in Mailpit at `http://127.0.0.1:8025`.
 
-To run without Docker, set `OTP_DELIVERY=local` in `qa/backend/.env`; the code is then shown in the web app and returned by the signup API. This fallback does not send email.
+If Mailpit cannot be set up, edit `qa/backend/.env` and set `MAILPIT_SETUP=false`, then restart the API. The OTP appears in the app's local verification panel and signup response; email delivery is skipped.
 
 In a fresh/reset database the first verified account is ADMIN; subsequent accounts are VIEWER. From the dashboard choose **Add account** to sign in a second user in the same browser, then use the session selector while keeping both sessions active. Open another tab to select a different active role; both tabs keep their selections. If local accounts already exist, use the existing ADMIN or reset the disposable database first.
 

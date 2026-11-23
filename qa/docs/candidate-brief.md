@@ -23,12 +23,12 @@ The starter deliberately contains no prewritten QA test framework, browser autom
 
 ## App startup
 
-Follow [`../README.md`](../README.md). Start the API and frontend manually in separate terminal windows. For the default email-delivery mode, start the **Mailpit-only** sidecar with `docker compose -f qa/mailpit/compose.yaml up -d`; the app services are not containerized. Mailpit is at `http://127.0.0.1:8025`, the web app at `http://127.0.0.1:5173`, and API health at `http://127.0.0.1:3001/api/health`. For automation, Mailpit's local HTTP API can retrieve the latest matching message; see [`../mailpit/README.md`](../mailpit/README.md). If Docker is unavailable, configure `OTP_DELIVERY=local` as described in the setup docs.
+Follow [`../README.md`](../README.md). Start the API and frontend manually in separate terminal windows. For the default email-delivery mode, start the **Mailpit-only** sidecar with `docker compose -f qa/mailpit/compose.yaml up -d`; the app services are not containerized. Mailpit is at `http://127.0.0.1:8025`, the web app at `http://127.0.0.1:5173`, and API health at `http://127.0.0.1:3001/api/health`. For automation, Mailpit's local HTTP API can retrieve the latest matching message; see [`../mailpit/README.md`](../mailpit/README.md). If you cannot set up Mailpit, set `MAILPIT_SETUP=false` in `qa/backend/.env` and restart the API; the verification code will appear in the app.
 
 To create a test account:
 
 1. Choose **Create an account** and enter a unique disposable email and synthetic password (8+ characters).
-2. In the default SMTP mode, open Mailpit from the signup page and read the OTP email. It is captured locally and never sent to an external mail provider. In `OTP_DELIVERY=local` fallback mode, the six-digit code appears directly in the browser.
+2. With the default `MAILPIT_SETUP=true`, open Mailpit from the signup page and read the OTP email. It is captured locally and never sent to an external mail provider. With `MAILPIT_SETUP=false`, no mail service is used and the six-digit code appears directly in the app's verification panel.
 3. Enter the displayed OTP to verify, then sign in with the same email/password.
 4. On a fresh/reset database, the first account is `ADMIN`. From that dashboard choose **Add account** and create a second account with a different disposable email in the same browser; the second account is `VIEWER`. If local records already exist, use the existing ADMIN or reset the disposable database first.
 5. Use the **Active browser session** selector to switch between accounts without signing either out. You can choose different active sessions in separate tabs of the same browser. Confirm the `ADMIN` can create/update/delete, the `VIEWER` can read but cannot write, both see the same tasks, and signing out one session leaves the other session active.

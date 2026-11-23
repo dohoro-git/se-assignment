@@ -6,9 +6,15 @@ export type OtpDelivery =
   | { channel: 'local'; code: string }
 
 export async function deliverSignupOtp(email: string, code: string, expiresInSeconds: number): Promise<OtpDelivery> {
-  const mode = process.env.OTP_DELIVERY ?? 'smtp'
-  if (mode === 'local') return { channel: 'local', code }
-  if (mode !== 'smtp') {
+  const mailpitSetup = process.env.MAILPIT_SETUP?.trim().toLowerCase()
+  const legacyDeliveryMode = process.env.OTP_DELIVERY?.trim().toLowerCase()
+  if (mailpitSetup === 'false' || (mailpitSetup === undefined && legacyDeliveryMode === 'local')) {
+    return { channel: 'local', code }
+  }
+  if (mailpitSetup && mailpitSetup !== 'true') {
+    throw new AppError(500, 'MAILPIT_CONFIG', 'MAILPIT_SETUP must be either "true" or "false".')
+  }
+  if (legacyDeliveryMode && legacyDeliveryMode !== 'smtp' && legacyDeliveryMode !== 'local') {
     throw new AppError(500, 'OTP_DELIVERY_CONFIG', 'OTP_DELIVERY must be either "smtp" or "local".')
   }
 

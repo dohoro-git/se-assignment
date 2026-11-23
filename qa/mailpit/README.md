@@ -11,7 +11,7 @@ docker compose -f qa/mailpit/compose.yaml up -d
 - SMTP receiver: `127.0.0.1:1025`
 - Inbox UI (and HTTP API): `http://127.0.0.1:8025`
 
-The API's sample configuration uses `OTP_DELIVERY=smtp`, `SMTP_HOST=127.0.0.1`, and `SMTP_PORT=1025`. Signup codes are sent to this local mailbox; nothing is relayed to a real email provider. Mailpit keeps messages in memory for the lifetime of the container, so stop/start clears the inbox.
+The API's sample configuration uses `MAILPIT_SETUP=true`, `SMTP_HOST=127.0.0.1`, and `SMTP_PORT=1025`. Signup codes are sent to this local mailbox; nothing is relayed to a real email provider. Mailpit keeps messages in memory for the lifetime of the container, so stop/start clears the inbox.
 
 Stop Mailpit when finished:
 
@@ -19,7 +19,7 @@ Stop Mailpit when finished:
 docker compose -f qa/mailpit/compose.yaml down
 ```
 
-If Docker is unavailable, set `OTP_DELIVERY=local` in `qa/backend/.env`. In that fallback mode the code is shown in the web app's Local OTP inbox and included in the signup response; it is not emailed.
+If Mailpit cannot be set up, set `MAILPIT_SETUP=false` in `qa/backend/.env` and restart the API. In that fallback mode the OTP is shown in the web app's local verification panel and included in the signup response; it is not emailed. No Docker service is required.
 
 ## Retrieving OTPs from automation
 

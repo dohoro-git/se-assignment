@@ -27,7 +27,7 @@ Errors use JSON with a stable `code` and human-readable `error`; validation erro
 | `409` | `ACCOUNT_EXISTS`, `TASK_DELETE_CONFLICT` | Duplicate account or task deletion conflict |
 | `413` | `PAYLOAD_TOO_LARGE` | JSON request body exceeds 10 KB |
 | `429` | `OTP_ATTEMPTS_EXCEEDED` | OTP challenge used all attempts |
-| `500` | `INTERNAL_ERROR` | Unexpected server failure; details are intentionally not exposed |
+| `500` | `INTERNAL_ERROR`, `MAILPIT_CONFIG`, `SMTP_CONFIG` | Unexpected server failure or invalid local email configuration |
 | `503` | `OTP_DELIVERY_FAILED` | The configured SMTP receiver is unavailable; no signup challenge remains active |
 
 The server responds with `Cache-Control: no-store`. A `204` response has no body.
@@ -48,7 +48,7 @@ No authentication required.
 
 ### `POST /auth/signup/request`
 
-Starts an account signup challenge. The API generates a random six-digit, one-time code. By default (`OTP_DELIVERY=smtp`), it sends the code by SMTP to the local Mailpit inbox at `http://127.0.0.1:8025`; the code is not returned in the API response. With `OTP_DELIVERY=local`, the code is returned under `delivery.code` for offline testing and no email is sent. Code lifetime is 600 seconds; a challenge allows at most five failed attempts. Requesting another code replaces the active challenge for that email.
+Starts an account signup challenge. The API generates a random six-digit, one-time code. By default (`MAILPIT_SETUP=true`), it sends the code by SMTP to the local Mailpit inbox at `http://127.0.0.1:8025`; the code is not returned in the API response. With `MAILPIT_SETUP=false`, no SMTP connection is attempted and the code is returned under `delivery.code` for display in the app. Code lifetime is 600 seconds; a challenge allows at most five failed attempts. Requesting another code replaces the active challenge for that email.
 
 **Request**
 
@@ -62,7 +62,7 @@ Starts an account signup challenge. The API generates a random six-digit, one-ti
 
 **202 response**
 
-Default SMTP mode (`OTP_DELIVERY=smtp`) returns `202`:
+Default SMTP mode (`MAILPIT_SETUP=true`) returns `202`:
 
 ```json
 {
@@ -74,7 +74,7 @@ Default SMTP mode (`OTP_DELIVERY=smtp`) returns `202`:
 
 Check the local Mailpit inbox for the random six-digit code. The code itself is not included in this response.
 
-Offline fallback (`OTP_DELIVERY=local`) instead returns:
+In-app fallback (`MAILPIT_SETUP=false`) instead returns:
 
 ```json
 {
@@ -84,7 +84,7 @@ Offline fallback (`OTP_DELIVERY=local`) instead returns:
 }
 ```
 
-A new random value is generated on each successful request. If SMTP is unavailable, the API returns `503 OTP_DELIVERY_FAILED` and removes the unsent challenge. For an existing account the API returns `409 ACCOUNT_EXISTS`.
+A new random value is generated on each successful request. When `MAILPIT_SETUP=true`, if SMTP is unavailable the API returns `503 OTP_DELIVERY_FAILED` and removes the unsent challenge. When `MAILPIT_SETUP=false`, signup works without Mailpit. For an existing account the API returns `409 ACCOUNT_EXISTS`.
 
 ### `POST /auth/signup/verify`
 

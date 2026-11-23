@@ -30,6 +30,8 @@ Use Node.js 22.12+ (or Node.js 24), npm, and a modern browser. Docker is used on
 
    Inbox: `http://127.0.0.1:8025`; SMTP receiver: `127.0.0.1:1025`.
 
+If you cannot set up Mailpit, copy `qa/backend/.env.example` to `.env`, set `MAILPIT_SETUP=false`, and restart the API. The OTP is then displayed in the app's local verification panel, and no mail service or Docker is required.
+
 1. Start the API in terminal 1:
 
    ```bash
@@ -58,7 +60,7 @@ The complete manual configuration, environment settings, and reset instructions 
 ## Account and shared dashboard workflow
 
 1. Choose **Create an account** and use a unique disposable email and a synthetic password of at least 8 characters.
-2. Submit the signup form and read the random six-digit code from the message in Mailpit. It is captured locally and not relayed to an external provider. If using `OTP_DELIVERY=local`, the code is displayed in the app instead.
+2. Submit the signup form and read the random six-digit code from the message in Mailpit. It is captured locally and not relayed to an external provider. If `MAILPIT_SETUP=false`, the code is displayed in the app's local verification panel and returned by the signup API instead.
 3. Verify the account, then sign in.
 4. In a fresh/reset database, the first verified account is `ADMIN`. From that dashboard select **Add account**, then create a second account with a different disposable email in the same browser; later accounts are `VIEWER`. The account list is shared across tabs, while each tab can choose its own active session. If local accounts already exist, use the existing ADMIN or reset the disposable database first.
 5. Use the **Active browser session** selector to switch without signing out. Verify both accounts see the same **Dohoro QA Team** task list, the ADMIN can manage tasks, the VIEWER is read-only, and signing out one leaves the other session active. Changes appear after **Refresh shared tasks**; live push updates are not promised.
