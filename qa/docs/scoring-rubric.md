@@ -4,7 +4,7 @@
 
 | Area | Marks | What to assess |
 |---|---:|---|
-| A. Functional Test Automation | 15 | Sign-in, validation, dashboard navigation, CRUD, and an automated reproduction of the intentionally failing feature. |
+| A. Functional Test Automation | 15 | OTP retrieval and verification, sign-in, validation, dashboard navigation, and CRUD. |
 | B. Negative Testing | 15 | Invalid/missing/boundary inputs, errors, and graceful failure handling. |
 | C. Automation Framework Structure | 30 | Independent, maintainable test architecture, reusable patterns, fixtures, configuration, test data, diagnostics, and reporting. |
 | D. Multiple User & Session Handling | 15 | Separate users/roles/contexts, isolation, logout, and expiry. |
@@ -21,7 +21,7 @@
 | Create a task and verify it appears | 2 |
 | Update a task and verify the changed values | 2 |
 | Delete a task and verify it is no longer available | 2 |
-| Identify the intentionally failing scenario and automate a reliable reproduction | 3 |
+| Configure OTP retrieval (Mailpit API or local fallback), extract/submit the code to verify signup, and complete sign-in | 3 |
 | **Subtotal** | **15** |
 
 ## B. Negative Testing — 15 marks
