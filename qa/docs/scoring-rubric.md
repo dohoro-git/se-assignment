@@ -83,12 +83,12 @@ Require a candidate README or equivalent that enables an evaluator on another ma
 |---|---:|---|
 | Framework setup and execution | 2 | Required software, clone/install/configuration steps, environment variables, all-tests and individual-test commands. |
 | Third-party tools/dependencies | 2 | Tool list, purpose, setup/credentials if needed, and behavior when a dependency is unavailable. |
-| Execution and debugging | 2 | Run/debug modes, Inspector or equivalent, traces/screenshots, reports, and troubleshooting commands. |
-| Implemented framework features | 2 | Brief explanation of chosen patterns/features (POM, fixtures, hooks, API testing, parallelism, retries, auth, interception, reporting, etc.) and what was actually implemented. |
-| Coverage and automation decisions | 2 | Feature-wise test list, unautomated scenarios, rationale, limitations, and future opportunities. |
+| Execution and debugging | 2 | Supported run modes, framework inspector/debug mode, screenshots/traces, reports, and troubleshooting commands. For Playwright, document Inspector, Trace Viewer, and report commands; other tools should document equivalents. |
+| Implemented framework features | 2 | Brief explanation of chosen patterns/features (for example, POM, fixtures/hooks, API helpers, parallelism, retries, auth state, interception, and reporting) and what was actually implemented. |
+| Coverage decisions | 2 | Feature-wise automated scenarios, scenarios not automated and why, limitations, and future opportunities. |
 | **Subtotal** | **10** | |
 
-For Playwright, examples include `npx playwright test`, `npx playwright test --ui`, `npx playwright test --debug`, `npx playwright show-trace`, and `npx playwright show-report`. Other frameworks should document their equivalent commands and debugging tools.
+For Playwright, document and tailor commands such as `npx playwright test`, `npx playwright test --ui`, `npx playwright test --debug`, `npx playwright show-trace <trace.zip>`, and `npx playwright show-report`. Candidates using another framework should document equivalent execution and debugging commands.
 
 ## Overall scoring anchors
 
