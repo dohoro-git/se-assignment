@@ -85,10 +85,10 @@ For endpoint paths, request/response examples, status codes, and error shapes, u
 
 Submit:
 
-1. Your independently configured automation project, tests, and required framework configuration/dependencies.
-2. Clear clean-checkout setup and run instructions.
-3. A concise defect report: title/severity, environment, preconditions, exact reproduction steps, expected versus actual result, evidence, and the automated regression test that reproduces it.
-4. A brief explanation of your test structure, coverage choices, assumptions, and known limitations.
+1. Your independently configured automation project, test source, and framework/dependency files.
+2. Automated functional, negative, CRUD, multi-user/role, and session scenarios, including a reproducible test for the intentionally failing feature.
+3. A concise bug report: title/severity, environment, preconditions, exact reproduction steps, expected versus actual result, evidence, likely root cause, and the regression-test reference.
+4. Documentation that lets another evaluator set up, run, debug, and understand your project. Cover install/configuration and all-test/individual-test commands; third-party tools and failure handling; run/debug modes, traces/screenshots/reports; implemented framework features and design decisions; feature-wise coverage, exclusions, limitations, and future opportunities.
 
 Use unique disposable accounts and keep credentials, `.env` files, database files, and other generated local data out of your submission. Follow the submission process provided by the assessor.
 
@@ -96,14 +96,12 @@ Use unique disposable accounts and keep credentials, `.env` files, database file
 
 | Area | Points |
 |---|---:|
-| Framework ownership and repeatable setup | 15 |
-| Test strategy and risk prioritization | 15 |
-| Functional flows and task lifecycle | 20 |
-| Validation, boundaries, and negative cases | 15 |
-| Multi-user collaboration and data management | 10 |
-| Defect discovery and regression reproduction | 10 |
-| Maintainability and diagnostic quality | 10 |
-| Accessibility, responsive behavior, and browser considerations | 5 |
+| A. Functional Test Automation | 15 |
+| B. Negative Testing | 15 |
+| C. Automation Framework Structure | 30 |
+| D. Multiple User & Session Handling | 15 |
+| E. Debugging & Defect Identification | 15 |
+| F. Documentation & Framework Usability | 10 |
 | **Total** | **100** |
 
 Scoring details and anchors are in [`qa/docs/scoring-rubric.md`](qa/docs/scoring-rubric.md). Framework choice is not scored; quality, reproducibility, reasoning, and evidence are.

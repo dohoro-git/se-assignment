@@ -2,24 +2,35 @@
 
 ## Objective
 
-Build a small, maintainable QA automation project for **Dohoro Task Desk**, the local task-dashboard web app. The app offers signup using a locally displayed random OTP, sign-in, and a shared team task dashboard. The application is provided; your primary deliverable is the testing framework, tests, and findings you design.
+Build a maintainable QA automation project for **Dohoro Task Desk**, a shared task-dashboard web app. The app supports OTP signup (sent to local Mailpit by default, or displayed in-app when `MAILPIT_SETUP=false`), sign-in, two roles, and shared task CRUD. The application is provided; your primary deliverable is the framework, tests, debugging evidence, and findings you design.
 
 One feature scenario contains an intentional defect. Find it, create a reliable automated reproduction, and report the observed versus expected behavior. Do not change the application implementation to hide or fix it.
 
 ## What to submit
 
-1. Your own QA automation project and all necessary dependency/configuration files.
-2. Automated tests with instructions to install dependencies and execute them from a clean checkout.
-3. A concise findings report with the defect's title/severity, environment, preconditions, exact reproduction steps, expected/actual result, evidence, and a clear regression-test reference.
-4. A brief explanation of your test structure, coverage priorities, and any limitations or assumptions.
+1. Your independently structured QA automation project, tests, and dependency/configuration files.
+2. A reproducible test command and documentation for clean setup, configuration, all-tests and individual-test execution.
+3. A concise bug report for the intentionally failing feature: title/severity, environment, preconditions, exact steps, expected/actual results, evidence, and regression-test reference.
+4. Debugging evidence or a short explanation of how you investigated a failed run (trace, screenshot, logs, report, or an equivalent tool output).
+5. A coverage summary listing what you automated, what you did not automate, why, limitations, and future opportunities.
 
-Keep candidate-written automation in a separate, clearly named directory (for example, `qa/automation/`) or a separate repository. Do not copy your personal credentials or generated SQLite database into your submission. Use a synthetic address such as `qa-<unique-id>@example.test` and a disposable password.
+Keep candidate-written automation in a separate, clearly named directory (for example, `qa/automation/`) or a separate repository. Do not copy your personal credentials or generated SQLite database into your submission. Use unique synthetic addresses and disposable passwords.
 
 ## Framework choice
 
 Select a suitable framework and structure it yourself. **Playwright, Cypress, WebdriverIO, Selenium, or another reasonable framework are acceptable.** No particular file layout, programming language, or framework is required. Include browser/driver installation steps if your chosen framework needs them. Tests must be repeatable and runnable using the instructions you provide.
 
 The starter deliberately contains no prewritten QA test framework, browser automation dependency, or candidate test cases. Your framework configuration and organization are part of the assessment.
+
+## Required framework documentation
+
+Include a README (or equivalent) that lets another evaluator set up, execute, debug, and understand your automation independently. Cover:
+
+1. **Framework setup and execution:** required software, dependency/browser installation, environment variables, base URL, commands for the full suite and an individual test.
+2. **Third-party tools/dependencies:** what each is used for, setup/configuration (including Mailpit where applicable), and how tests report or handle service failures.
+3. **Execution and debugging:** supported run modes, framework inspector/debug mode, screenshots/traces, reports, and troubleshooting commands. For Playwright, document Inspector, Trace Viewer, and report commands; other tools should document equivalents.
+4. **Implemented framework features:** what you actually implemented (for example, POM, fixtures/hooks, API helpers, test data, retries, parallelism, auth state, network interception, and reporting) and why.
+5. **Coverage decisions:** feature-wise automated scenarios, scenarios not automated and why, limitations, and future opportunities.
 
 ## App startup
 
@@ -39,13 +50,16 @@ The API docs at [`api.md`](api.md) describe the contract and status codes. Setup
 
 Use these requirements as a black-box contract, including error paths:
 
-- Account signup should validate email/password, generate an unpredictable one-time code, send it through the configured local Mailpit SMTP receiver, reject invalid/expired/reused challenges, and allow the user to sign in after successful verification. In SMTP mode the code should arrive in Mailpit rather than be exposed in the API response.
-- Sign-in should create a usable session; sign-out should revoke only that account's session. Multiple accounts should remain signed in in one browser, be switchable per tab using the account selector, and retain their independent roles. Protected APIs should reject missing/invalid sessions.
-- Every OTP-verified account is a member of the same `Dohoro QA Team` workspace. The first account is assigned `ADMIN`; later accounts are `VIEWER`. Both roles can see the same task list, including tasks created by other members. `ADMIN` can create/read/update/filter/delete tasks; `VIEWER` is read-only, and the API must reject viewer writes with `403`. The server derives role and workspace membership from the session; clients cannot select or impersonate either.
-- A task should identify its creator. Changes made by one signed-in member should be visible to another member after that member refreshes the dashboard. Live push updates are not promised.
-- Task forms should validate title and field lengths, show useful feedback, and expose loading/success/error/empty states.
-- Destructive deletion should require explicit confirmation. On confirmed deletion, the selected task should be removed and the UI should reflect the server result.
-- Dashboard state should be understandable, keyboard operable, and remain usable at a narrow viewport.
+- Signup validates email/password, generates an unpredictable OTP, sends it to Mailpit when `MAILPIT_SETUP=true`, and rejects invalid, expired, or reused codes. With `MAILPIT_SETUP=false`, the OTP is displayed in-app and signup remains usable without Docker.
+- Valid credentials sign in and navigate to the dashboard. Invalid credentials fail with useful feedback. Required email/password fields and invalid inputs are validated.
+- A user can sign out; the API revokes only that account session. Protected routes reject missing/invalid sessions, and expired sessions return the user to sign-in.
+- On a fresh/reset database, the first verified account is `ADMIN`; later accounts are `VIEWER`. The API assigns roles and ignores any client role override.
+- Multiple users can be signed in at once in the same browser. The account list is shared across tabs while each tab can choose its own active account. Separate browser contexts must also keep their sessions isolated.
+- All users see the shared `Dohoro QA Team` task list, including tasks created by other users. `ADMIN` can create, read, update, filter, and delete tasks; `VIEWER` can read but receives `403` for writes.
+- Validate the complete task CRUD lifecycle: create and verify a record, update and verify it, delete and verify it is gone. The UI requires confirmation before destructive deletion.
+- A task identifies its creator; changes from another session are visible after refresh. Live push updates are not promised.
+- One feature scenario is intentionally failing. Discover it, automate a stable reproduction, explain expected versus actual behavior, and investigate the likely cause without changing app code to hide it.
+- Forms and pages provide useful validation, loading, empty, success, and error states. The dashboard remains keyboard operable and usable at narrow viewport sizes.
 
 Treat the contract as expected behavior, not proof the current app is correct. Investigate discrepancies rather than working around them silently.
 

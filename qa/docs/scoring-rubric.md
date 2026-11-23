@@ -1,34 +1,102 @@
-# QA Assessment Scoring Rubric
+# Automation Tester Technical Assessment — Scoring Rubric
 
-**Total: 100 points.** Score evidence in the submitted automation and report, not framework choice. Partial credit is expected. A candidate does not need to identify every edge case to score well.
+**Total: 100 marks.** Score the submitted automation project, test design, defect report, and documentation. Playwright, Selenium, Cypress, or another suitable tool is acceptable; do not score candidates down for framework choice alone. Partial marks are available.
 
-| Area | Points | Evidence to look for |
+| Area | Marks | What to assess |
 |---|---:|---|
-| Framework ownership and runnable setup | 15 | Candidate independently configures a suitable framework; clean install, browser setup, base URL, and test command are documented; environment/config is not tied to the candidate's machine. |
-| Test strategy and prioritization | 15 | Clear risk-based choices, meaningful regression boundaries, a sensible test pyramid, and rationale; identifies important auth/session/data-loss risks. |
-| Functional and lifecycle coverage | 20 | Signup → OTP → sign-in, protected session/sign-out, task create/read/update/status/filter/delete; includes empty and populated states and checks user-visible outcomes. |
-| Validation, boundaries, and negative cases | 15 | Required/malformed fields, input length and status boundaries, OTP email received in Mailpit, invalid OTP/credentials/session, SMTP failure, duplicate/repeated actions, API errors, and useful assertions. |
-| Multi-user sessions and role-based collaboration | 10 | Keeps ADMIN and VIEWER accounts signed in and switchable in one browser; verifies shared visibility, creator attribution, ADMIN writes, VIEWER read-only enforcement, independent sign-out, and reliable test-data cleanup. |
-| Defect discovery and regression | 10 | Finds the seeded issue, supplies a stable automated reproduction, distinguishes expected/actual results, explains impact/severity, and identifies a regression test. |
-| Maintainability and diagnostics | 10 | Readable tests/helpers, sensible selectors/waits, deterministic assertions, actionable failure output, and avoidance of sleeps or brittle implementation-dependent checks. |
-| Accessibility, responsive, and browser considerations | 5 | At least targeted keyboard/accessibility and narrow-viewport coverage or a reasoned explanation of scope. |
+| A. Functional Test Automation | 15 | Sign-in, validation, dashboard navigation, CRUD, and an automated reproduction of the intentionally failing feature. |
+| B. Negative Testing | 15 | Invalid/missing/boundary inputs, errors, and graceful failure handling. |
+| C. Automation Framework Structure | 30 | Independent, maintainable test architecture, reusable patterns, fixtures, configuration, test data, diagnostics, and reporting. |
+| D. Multiple User & Session Handling | 15 | Separate users/roles/contexts, isolation, logout, and expiry. |
+| E. Debugging & Defect Identification | 15 | Discovery, investigation, root-cause reasoning, reproducible bug report, and failure debugging evidence. |
+| F. Documentation & Framework Usability | 10 | Another evaluator can independently install, run, debug, and understand the test suite. |
 | **Total** | **100** | |
 
-## Scoring anchors
+## A. Functional Test Automation — 15 marks
 
-- **90–100 — Strong:** Thoughtful, independent structure; repeatable tests cover end-to-end value and key failures; defect report is precise; setup works from a clean environment.
-- **75–89 — Good:** Useful runnable suite and sound core coverage, with a few gaps in edge conditions, isolation, or diagnostics.
-- **60–74 — Developing:** Some valuable automated scenarios, but setup/repeatability, assertions, or coverage are uneven; bug evidence may be incomplete.
-- **Below 60 — Needs substantial improvement:** Suite is not reproducibly runnable, largely manual or happy-path-only, lacks clear expected/actual assertions, or provides insufficient evidence.
+| Evidence | Marks |
+|---|---:|
+| Valid credentials complete sign-in and reach the dashboard | 3 |
+| Invalid credentials, required fields, and basic input validation | 3 |
+| Create a task and verify it appears | 2 |
+| Update a task and verify the changed values | 2 |
+| Delete a task and verify it is no longer available | 2 |
+| Identify the intentionally failing scenario and automate a reliable reproduction | 3 |
+| **Subtotal** | **15** |
 
-## Evaluator guidance
+## B. Negative Testing — 15 marks
 
-- Do not award or deduct points based on whether the candidate selects Playwright vs Cypress (or another appropriate tool).
-- Prefer robust observable outcomes over test count. A few well-designed cases are better than many duplicate assertions.
-- The seeded defect is in the task-delete contract. The assessor should verify the expected and actual behavior locally before scoring; do not tell candidates the defect location in advance.
-- Do not expect production email delivery or internet access: Mailpit captures OTP messages locally. Reward testing the SMTP flow, message content/recipient, and fallback or delivery-error behavior where appropriate.
-- A candidate may describe a defect correctly even if a platform issue prevents local automation; award evidence and reasoning proportionally.
+| Evidence | Marks |
+|---|---:|
+| Invalid and unexpected inputs | 4 |
+| Missing mandatory fields | 3 |
+| Useful assertions for validation/error messages and HTTP/application responses | 3 |
+| Boundary conditions (lengths, status values, OTP/session expiry, etc.) | 2 |
+| Graceful behavior during service/network/API failures | 3 |
+| **Subtotal** | **15** |
 
-## Suggested assessor notes
+## C. Automation Framework Structure — 30 marks
 
-Record the candidate's chosen framework, how a fresh test account/database is obtained, suite command/result, highest-risk scenarios covered, one example assertion quality, defect reproduction reliability, and any setup friction. Keep the raw score and a short justification for each category for consistent comparisons across candidates.
+Candidates choose their own structure. Page Object Model, equivalent abstractions, or a simpler design are acceptable when justified.
+
+| Evidence | Marks |
+|---|---:|
+| Clear test organization and reasoned architecture (POM where appropriate) | 6 |
+| Reusable helpers, fixtures, hooks, and setup/teardown | 6 |
+| Environment/configuration and isolated test-data management | 5 |
+| Stable assertions, selectors, waits, and failure handling | 5 |
+| Diagnostics: screenshots, traces, logs, and/or reports on failure | 5 |
+| Readability, maintainability, and coding practices | 3 |
+| **Subtotal** | **30** |
+
+Candidates are not required to implement every pattern. They should explain why their selected patterns fit the scope and how test data is kept repeatable.
+
+## D. Multiple User & Session Handling — 15 marks
+
+| Evidence | Marks |
+|---|---:|
+| Log in as multiple users using isolated browser contexts (or equivalent isolation) | 4 |
+| Validate ADMIN and VIEWER permissions, including denied writes | 4 |
+| Verify session/data isolation while both users share the team task list | 3 |
+| Verify logout revokes only the selected session and check expiry behavior | 4 |
+| **Subtotal** | **15** |
+
+The app assigns the first account in a fresh/reset database `ADMIN` and subsequent accounts `VIEWER`. The app also supports saved account sessions in the same browser; separate browser contexts should still remain isolated.
+
+## E. Debugging & Defect Identification — 15 marks
+
+| Evidence | Marks |
+|---|---:|
+| Finds the seeded failing feature and creates a reliable automated reproduction | 5 |
+| Investigates and explains the probable root cause with supporting evidence | 3 |
+| Bug report includes steps, preconditions, expected/actual behavior, severity, and evidence | 4 |
+| Uses traces/screenshots/logs or equivalent to explain debugging of the failed test | 3 |
+| **Subtotal** | **15** |
+
+Do not share the location or exact reproduction of the seeded defect with candidates before assessment.
+
+## F. Documentation & Framework Usability — 10 marks
+
+Require a candidate README or equivalent that enables an evaluator on another machine to run the work.
+
+| Documentation area | Marks | Expected content |
+|---|---:|---|
+| Framework setup and execution | 2 | Required software, clone/install/configuration steps, environment variables, all-tests and individual-test commands. |
+| Third-party tools/dependencies | 2 | Tool list, purpose, setup/credentials if needed, and behavior when a dependency is unavailable. |
+| Execution and debugging | 2 | Run/debug modes, Inspector or equivalent, traces/screenshots, reports, and troubleshooting commands. |
+| Implemented framework features | 2 | Brief explanation of chosen patterns/features (POM, fixtures, hooks, API testing, parallelism, retries, auth, interception, reporting, etc.) and what was actually implemented. |
+| Coverage and automation decisions | 2 | Feature-wise test list, unautomated scenarios, rationale, limitations, and future opportunities. |
+| **Subtotal** | **10** | |
+
+For Playwright, examples include `npx playwright test`, `npx playwright test --ui`, `npx playwright test --debug`, `npx playwright show-trace`, and `npx playwright show-report`. Other frameworks should document their equivalent commands and debugging tools.
+
+## Overall scoring anchors
+
+- **90–100 — Strong:** Independent, repeatable suite; sound coverage and architecture; useful debugging evidence; actionable defect report; complete handoff documentation.
+- **75–89 — Good:** Covers core flows and the seeded issue with a runnable suite; several edge cases, diagnostics, or documentation items could be stronger.
+- **60–74 — Developing:** Some useful automated cases, but gaps in repeatability, role/session isolation, negative coverage, or defect evidence.
+- **Below 60 — Needs substantial improvement:** Suite is not independently runnable, mostly happy-path, lacks useful assertions/diagnostics, or omits the defect report and setup guidance.
+
+## Assessor notes
+
+Record the selected framework, suite command/result, how test users and Mailpit messages are managed, role/session scenarios covered, the intentionally failing case reproduced, report quality, and setup friction. Give a short justification for each category so candidates are scored consistently.
